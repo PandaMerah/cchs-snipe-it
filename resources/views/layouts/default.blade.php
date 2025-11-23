@@ -971,7 +971,7 @@ dir="{{ Helper::determineLanguageDirection() }}">
                 </section>
 
             </div><!-- /.content-wrapper -->
-            <footer class="main-footer hidden-print" style="display:grid;flex-direction:column;">
+            <!-- <footer class="main-footer hidden-print" style="display:grid;flex-direction:column;">
 
                 <div class="1hidden-xs pull-left">
                     <div class="pull-left">
@@ -1015,7 +1015,7 @@ dir="{{ Helper::determineLanguageDirection() }}">
                         </div>
                     @endif
                 </div>
-            </footer>
+            </footer> -->
         </div><!-- ./wrapper -->
 
 
