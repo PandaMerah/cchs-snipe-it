@@ -59,6 +59,7 @@ class LocationsTransformer
                 'currency' =>  ($location->currency) ? e($location->currency) : null,
                 'ldap_ou' =>  ($location->ldap_ou) ? e($location->ldap_ou) : null,
                 'tag_color' => $location->tag_color ? e($location->tag_color) : null,
+                'clinic_code' => ($location->clinic_code) ? e($location->clinic_code) : null,
                 'notes' => Helper::parseEscapedMarkedownInline($location->notes),
                 'created_at' => Helper::getFormattedDateObject($location->created_at, 'datetime'),
                 'created_by' => $location->adminuser ? [

@@ -78,6 +78,19 @@
     </div>
 </div>
 
+<div class="form-group{{ $errors->has('clinic_code') ? ' has-error' : '' }}">
+    <label for="clinic_code" class="col-md-3 control-label">{{ trans('admin/locations/table.clinic_code') }}</label>
+    <div class="col-md-7">
+        <input class="form-control" type="text" name="clinic_code" aria-label="clinic_code" id="clinic_code" value="{{ old('clinic_code', $item->clinic_code) }}"{!!  (Helper::checkIfRequired($item, 'clinic_code')) ? ' required' : '' !!} maxlength="191" />
+        @error('clinic_code')
+        <span class="alert-msg">
+            <x-icon type="x" />
+            {{ $message }}
+        </span>
+        @enderror
+    </div>
+</div>
+
 <fieldset name="color-preferences">
     <x-form-legend help_text="{{ trans('general.tag_color_help') }}">
         {{ trans('general.tag_color') }}

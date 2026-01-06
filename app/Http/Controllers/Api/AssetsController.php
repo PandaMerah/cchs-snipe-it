@@ -99,6 +99,7 @@ class AssetsController extends Controller
             'last_checkout',
             'last_checkin',
             'notes',
+            'accounting_asset_code',
             'expected_checkin',
             'order_number',
             'image',

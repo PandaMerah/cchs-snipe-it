@@ -21,6 +21,7 @@ return [
     'locations'                 => 'Locations',
     'parent'                    => 'Parent',
     'currency'                  => 'Location Currency',
+    'clinic_code'               => 'Clinic Code',
     'ldap_ou'                   => 'LDAP Search OU',
     'user_name'                 => 'User Name',
     'department'                => 'Department',

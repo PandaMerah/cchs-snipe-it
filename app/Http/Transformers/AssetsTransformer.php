@@ -72,6 +72,7 @@ class AssetsTransformer
                 'tag_color'=> ($asset->supplier->tag_color) ? e($asset->supplier->tag_color) : null,
             ] : null,
             'notes' => ($asset->notes) ? Helper::parseEscapedMarkedownInline($asset->notes) : null,
+            'accounting_asset_code' => ($asset->accounting_asset_code) ? e($asset->accounting_asset_code) : null,
             'order_number' => ($asset->order_number) ? e($asset->order_number) : null,
             'company' => ($asset->company) ? [
                 'id' => (int) $asset->company->id,

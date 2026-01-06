@@ -60,6 +60,7 @@ class LocationsController extends Controller
             'updated_at',
             'zip',
             'tag_color',
+            'clinic_code',
             'notes',
             ];
 
@@ -84,6 +85,7 @@ class LocationsController extends Controller
             'locations.company_id',
             'locations.tag_color',
             'locations.tag_color',
+            'locations.clinic_code',
             'locations.notes',
             'locations.created_by',
             'locations.deleted_at',

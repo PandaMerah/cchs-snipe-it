@@ -79,6 +79,7 @@ class Location extends SnipeModel
         'company_id',
         'tag_color',
         'notes',
+        'clinic_code',
     ];
     protected $hidden = ['user_id'];
 
@@ -89,7 +90,7 @@ class Location extends SnipeModel
      *
      * @var array
      */
-    protected $searchableAttributes = ['name', 'address', 'city', 'state', 'zip', 'created_at', 'ldap_ou', 'phone', 'fax', 'notes'];
+    protected $searchableAttributes = ['name', 'address', 'city', 'state', 'zip', 'created_at', 'ldap_ou', 'phone', 'fax', 'notes', 'clinic_code'];
 
     /**
      * The relations and their attributes that should be included when searching the model.

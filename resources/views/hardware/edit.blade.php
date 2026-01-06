@@ -106,6 +106,21 @@
     @endif
 
     @include ('partials.forms.edit.notes')
+
+    <!-- Accounting Asset Code -->
+    <div class="form-group{{ $errors->has('accounting_asset_code') ? ' has-error' : '' }}">
+        <label for="accounting_asset_code" class="col-md-3 control-label">{{ trans('admin/hardware/form.accounting_asset_code') }}</label>
+        <div class="col-md-7">
+            <input class="form-control" type="text" name="accounting_asset_code" aria-label="accounting_asset_code" id="accounting_asset_code" value="{{ old('accounting_asset_code', $item->accounting_asset_code) }}"{!!  (Helper::checkIfRequired($item, 'accounting_asset_code')) ? ' required' : '' !!} maxlength="191" />
+            @error('accounting_asset_code')
+            <span class="alert-msg">
+                <x-icon type="x" />
+                {{ $message }}
+            </span>
+            @enderror
+        </div>
+    </div>
+
     @include ('partials.forms.edit.location-select', ['translated_name' => trans('admin/hardware/form.default_location'), 'fieldname' => 'rtd_location_id', 'help_text' => trans('general.rtd_location_help')])
     @include ('partials.forms.edit.requestable', ['requestable_text' => trans('admin/hardware/general.requestable')])
 

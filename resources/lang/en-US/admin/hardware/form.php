@@ -35,6 +35,7 @@ return [
     'model'				=> 'Model',
     'months'			=> 'months',
     'name'				=> 'Asset Name',
+    'accounting_asset_code' => 'Accounting Asset Code',
     'notes'				=> 'Notes',
     'order'				=> 'Order Number',
     'qr'				=> 'QR Code',

@@ -157,6 +157,7 @@ class AssetsController extends Controller
                 $asset->model_id = $request->input('model_id');
                 $asset->order_number = $request->input('order_number');
                 $asset->notes = $request->input('notes');
+                $asset->accounting_asset_code = $request->input('accounting_asset_code');
                 $asset->created_by = auth()->id();
                 $asset->status_id = request('status_id');
                 $asset->warranty_months = request('warranty_months', null);
@@ -448,6 +449,7 @@ class AssetsController extends Controller
         }
 
         $asset->notes = $request->input('notes');
+        $asset->accounting_asset_code = $request->input('accounting_asset_code');
 
         $asset = $request->handleImages($asset);
 
