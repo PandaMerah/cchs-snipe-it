@@ -2,35 +2,26 @@
 
 return array(
 
-    'does_not_exist' => 'Lokasi tidak ada.',
-    'assoc_users'    => 'This location is not currently deletable because it is the location of record for at least one item or user, has assets assigned to it, or is the parent location of another location. Please update your records to no longer reference this location and try again ',
-    'assoc_assets'	 => 'Saat ini kategori ini terkait dengan setidaknya satu pengguna dan tidak dapat dihapus. Silahkan perbaharui pengguna anda untuk tidak lagi tereferensi dengan kategori ini dan coba lagi. ',
-    'assoc_child_loc'	 => 'Lokasi ini saat ini merupakan induk dari setidaknya satu lokasi anak dan tidak dapat dihapus. Perbarui lokasi Anda agar tidak lagi merujuk lokasi ini dan coba lagi. ',
-    'assigned_assets' => 'Assigned Assets',
-    'current_location' => 'Lokasi saat ini',
-    'open_map' => 'Open in :map_provider_icon Maps',
-    'deleted_warning' => 'This location has been deleted. Please restore it before attempting to make any changes.',
+    'does_not_exist' => 'Location does not exist.',
+    'assoc_users'	 => 'This location is currently associated with at least one user and cannot be deleted. Please update your users to no longer reference this location and try again. ',
+    'assoc_assets'	 => 'This location is currently associated with at least one asset and cannot be deleted. Please update your assets to no longer reference this location and try again. ',
+    'assoc_child_loc'	 => 'This location is currently the parent of at least one child location and cannot be deleted. Please update your locations to no longer reference this location and try again. ',
 
 
     'create' => array(
-        'error'   => 'Lokasi tidak dibuat, coba lagi.',
-        'success' => 'Lokasi berhasil dibuat.'
+        'error'   => 'Location was not created, please try again.',
+        'success' => 'Location created successfully.'
     ),
 
     'update' => array(
-        'error'   => 'Lokasi tidak diperbarui, silakan coba lagi',
-        'success' => 'Lokasi berhasil diperbarui.'
-    ),
-
-    'restore' => array(
-        'error'   => 'Location was not restored, please try again',
-        'success' => 'Location restored successfully.'
+        'error'   => 'Location was not updated, please try again',
+        'success' => 'Location updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   	=> 'Apakah anda yakin ingin menghapus lokasi ini?',
-        'error'   => 'Terjadi masalah saat menghapus lokasi. Silahkan coba lagi.',
-        'success' => 'Lokasi telah berhasil dihapus.'
+        'confirm'   	=> 'Are you sure you wish to delete this location?',
+        'error'   => 'There was an issue deleting the location. Please try again.',
+        'success' => 'The location was deleted successfully.'
     )
 
 );

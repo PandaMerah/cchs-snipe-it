@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands;
 
-use App\Helpers\Helper;
-use App\Models\Recipients\AlertRecipient;
 use App\Models\Setting;
-use App\Notifications\InventoryAlert;
+use DB;
+use Mail;
+use App\Helpers\Helper;
+
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Notification;
 
 class SendInventoryAlerts extends Command
 {
@@ -16,7 +16,7 @@ class SendInventoryAlerts extends Command
      *
      * @var string
      */
-    protected $signature = 'snipeit:inventory-alerts';
+    protected $signature = 'alerts:inventory';
 
     /**
      * The console command description.
@@ -27,6 +27,8 @@ class SendInventoryAlerts extends Command
 
     /**
      * Create a new command instance.
+     *
+     * @return void
      */
     public function __construct()
     {
@@ -40,28 +42,28 @@ class SendInventoryAlerts extends Command
      */
     public function handle()
     {
-        $settings = Setting::getSettings();
+        if ((Setting::getSettings()->alert_email!='')  && (Setting::getSettings()->alerts_enabled==1)) {
 
-        if (($settings->alert_email != '') && ($settings->alerts_enabled == 1)) {
-            $items = Helper::checkLowInventory();
+            $data['data'] = Helper::checkLowInventory();
+            $data['count'] = count($data['data']);
 
-            if (($items) && (count($items) > 0)) {
-                $this->info(trans_choice('mail.low_inventory_alert', count($items)));
-                // Send a rollup to the admin, if settings dictate
-                $recipients = collect(explode(',', $settings->alert_email))->map(function ($item, $key) {
-                    return new AlertRecipient($item);
-                });
+            if (count($data['data']) > 0) {
+				Mail::send('emails.low-inventory', $data, function ($m)  {
+	                $m->to(explode(',',Setting::getSettings()->alert_email), Setting::getSettings()->site_name);
+	                $m->subject('Low Inventory Report');
+	        	});
 
-                Notification::send($recipients, new InventoryAlert($items, $settings->alert_threshold));
-            } else {
-                $this->info('No low inventory items found. No mail sent.');
-            }
+			}
+
         } else {
-            if ($settings->alert_email == '') {
-                $this->error('Could not send email. No alert email configured in settings');
-            } elseif (1 != $settings->alerts_enabled) {
-                $this->info('Alerts are disabled in the settings. No mail will be sent');
-            }
+            if (Setting::getSettings()->alert_email=='') {
+				echo "Could not send email. No alert email configured in settings. \n";
+			} elseif (Setting::getSettings()->alerts_enabled!=1) {
+				echo "Alerts are disabled in the settings. No mail will be sent. \n";
+			}
         }
+
+
     }
+
 }

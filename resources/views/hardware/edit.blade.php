@@ -1,439 +1,536 @@
+@extends('layouts/default')
 
-@extends('layouts/edit-form', [
-    'createText' => trans('admin/hardware/form.create'),
-    'updateText' => trans('admin/hardware/form.update'),
-    'topSubmit' => true,
-    'helpText' => trans('help.assets'),
-    'helpPosition' => 'right',
-    'formAction' => ($item->id) ? route('hardware.update', $item) : route('hardware.store'),
-    'index_route' => 'hardware.index',
-    'options' => [
-                'back' => trans('admin/hardware/form.redirect_to_type',['type' => trans('general.previous_page')]),
-                'index' => trans('admin/hardware/form.redirect_to_all', ['type' => 'assets']),
-                'item' => trans('admin/hardware/form.redirect_to_type', ['type' => trans('general.asset')]),
-                'other_redirect' => trans('admin/hardware/form.redirect_to_type', [ 'type' => trans('general.asset').' '.trans('general.asset_model')]),
-               ]
-])
-
-
-{{-- Page content --}}
-@section('inputFields')
-    
-    @include ('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id'])
-
-
-  <!-- Asset Tag -->
-    <div class="form-group {{ ($errors->has('asset_tag') || $errors->has('asset_tags.1')) ? ' has-error' : '' }}">
-      <label for="asset_tag" class="col-md-3 control-label">{{ trans('admin/hardware/form.tag') }}</label>
-
-
-
-      @if  ($item->id)
-          <!-- we are editing an existing asset,  there will be only one asset tag -->
-          <div class="col-md-7 col-sm-12">
-
-          <input class="form-control" type="text" name="asset_tags[1]" id="asset_tag" value="{{ old('asset_tag', $item->asset_tag) }}" required>
-              {!! $errors->first('asset_tags', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
-              {!! $errors->first('asset_tag', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
-          </div>
-      @else
-          <!-- we are creating a new asset - let people use more than one asset tag -->
-          <div class="col-md-7 col-sm-12">
-              <input class="form-control"
-                     type="text" name="asset_tags[1]" id="asset_tag"
-                     value="{{ old('asset_tags.1', \App\Models\Asset::autoincrement_asset()) }}" required>
-              {!! $errors->first('asset_tags.1', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
-              {!! $errors->first('asset_tag', '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
-          </div>
-          <div class="col-md-2 col-sm-12">
-              <button class="add_field_button btn btn-sm btn-theme" name="add_field_button">
-                  <x-icon type="plus" />
-                  <span class="sr-only">
-                      {{ trans('general.new') }}
-                  </span>
-              </button>
-          </div>
-      @endif
-  </div>
-
-    @include ('partials.forms.edit.serial', ['fieldname'=> 'serials[1]', 'old_val_name' => 'serials.1', 'translated_serial' => trans('admin/hardware/form.serial')])
-
-    <div class="input_fields_wrap">
-        {{-- If we're back on this screen for an error, *and* we are doing 'create multiple', then... --}}
-        @php
-            $old_tags = old('asset_tags',[]);
-            /**
-            okay, so old() comes back as:
-              (
-                [1] => 1744410541
-                [2] => 1744410542
-              )
-            */
-            if(array_key_exists('1',$old_tags)) {
-                unset($old_tags[1]); //we already handled 'asset_tag.1' - so unset it
-            }
-        @endphp
-        @foreach(array_keys($old_tags) as $i)
-            {{-- This is mostly stolen from the HTML that we add via javascript on the 'add_field_button' handler in the embedded JS below --}}
-            {{--                @include ('partials.forms.edit.serial', ['fieldname'=> 'serials['.$loop->iteration.']', 'old_val_name' => 'serials.'.$loop->iteration, 'translated_serial' => trans('admin/hardware/form.serial')])--}}
-            <span class="fields_wrapper">
-                <div class="form-group {{  $errors->has('asset_tags.'.$i) ? ' has-error' : '' }}"><label for="asset_tag"
-                                                                                                         class="col-md-3 control-label">{{ trans('admin/hardware/form.tag') }} {{ $i }}</label>
-                    <div class="col-md-7 col-sm-12 required">
-                        <input type="text" class="form-control" name="asset_tags[{{ $i }}]"
-                               value="{{ old('asset_tags.'.$i) }}"
-                               required>
-              {!! $errors->first('asset_tags.'.$i, '<span class="alert-msg"><i class="fas fa-times"></i> :message</span>') !!}
-                    </div>
-                    <div class="col-md-2 col-sm-12">
-                        <a href="#" class="remove_field btn btn-sm btn-theme"><x-icon type="minus"/></a>
-                    </div>
-                </div>
-                @include ('partials.forms.edit.serial', ['fieldname'=> 'serials['.$i.']', 'old_val_name' => 'serials.'.$i, 'translated_serial' => trans('admin/hardware/form.serial')])
-            </span>
-        @endforeach
-    </div>
-
-    @include ('partials.forms.edit.model-select', ['translated_name' => trans('admin/hardware/form.model'), 'fieldname' => 'model_id', 'field_req' => true])
-
-
-    @include ('partials.forms.edit.status', [ 'required' => 'true'])
-    @if (!$item->id)
-        @include ('partials.forms.checkout-selector', ['user_select' => 'true','asset_select' => 'true', 'location_select' => 'true', 'style' => 'display:none;'])
-        @include ('partials.forms.edit.user-select', ['translated_name' => trans('admin/hardware/form.checkout_to'), 'fieldname' => 'assigned_user', 'style' => 'display:none;', 'required' => 'false'])
-        @include ('partials.forms.edit.asset-select', ['translated_name' => trans('admin/hardware/form.checkout_to'), 'fieldname' => 'assigned_asset', 'style' => 'display:none;', 'required' => 'false'])
-        @include ('partials.forms.edit.location-select', ['translated_name' => trans('admin/hardware/form.checkout_to'), 'fieldname' => 'assigned_location', 'style' => 'display:none;', 'required' => 'false'])
+{{-- Page title --}}
+@section('title')
+    @if ($asset->id)
+    	{{ trans('admin/hardware/form.update') }}
+    @else
+    	{{ trans('admin/hardware/form.create') }}
     @endif
-
-    @include ('partials.forms.edit.notes')
-    @include ('partials.forms.edit.location-select', ['translated_name' => trans('admin/hardware/form.default_location'), 'fieldname' => 'rtd_location_id', 'help_text' => trans('general.rtd_location_help')])
-    @include ('partials.forms.edit.requestable', ['requestable_text' => trans('admin/hardware/general.requestable')])
-
-
-
-    @include ('partials.forms.edit.image-upload', ['image_path' => app('assets_upload_path')])
-
-
-    <div id='custom_fields_content'>
-        <!-- Custom Fields -->
-        @if ($item->model && $item->model->fieldset)
-        <?php $model = $item->model; ?>
-        @endif
-        @if (old('model_id'))
-            @php
-                $model = \App\Models\AssetModel::find(old('model_id'));
-            @endphp
-        @elseif (isset($selected_model))
-            @php
-                $model = $selected_model;
-            @endphp
-        @endif
-        @if (isset($model) && $model)
-        @include("models/custom_fields_form",["model" => $model])
-        @endif
-    </div>
-
-
-    <div class="col-md-12 col-sm-12">
-
-        <fieldset name="optional-details">
-
-            <x-form-legend>
-                <a id="optional_info">
-                    <x-icon type="caret-right" class="fa-fw" id="optional_info_icon" />
-                    {{ trans('admin/hardware/form.optional_infos') }}
-                </a>
-            </x-form-legend>
-
-            <div id="optional_details" class="col-md-12" style="display:none">
-                @include ('partials.forms.edit.name', ['translated_name' => trans('admin/hardware/form.name')])
-                @include ('partials.forms.edit.warranty')
-                @include ('partials.forms.edit.datepicker', ['translated_name' => trans('admin/hardware/form.expected_checkin'),'fieldname' => 'expected_checkin'])
-                @include ('partials.forms.edit.datepicker', ['translated_name' => trans('general.next_audit_date'),'fieldname' => 'next_audit_date', 'help_text' => trans('general.next_audit_date_help')])
-                <!-- byod checkbox -->
-                <div class="form-group byod">
-                    <div class="col-md-7 col-md-offset-3">
-                        <label class="form-control">
-                            <input type="checkbox" value="1" name="byod" {{ (old('remote', $item->byod)) == '1' ? ' checked="checked"' : '' }} aria-label="byod">
-                            {{ trans('general.byod') }}
-                        </label>
-                        <p class="help-block">
-                            {{ trans('general.byod_help') }}
-                        </p>
-                    </div>
-                </div>
-
-            </div> <!-- end optional details -->
-        </fieldset>
-
-    </div><!-- end col-md-12 col-sm-12-->
-
-
-
-    <div class="col-md-12 col-sm-12">
-        <fieldset name="order-info">
-            <x-form-legend>
-                <a id="order_info">
-                    <x-icon type="caret-right" class="fa-fw" id="order_info_icon" />
-                    {{ trans('admin/hardware/form.order_details') }}
-                </a>
-            </x-form-legend>
-
-            <div id='order_details' class="col-md-12" style="display:none">
-                @include ('partials.forms.edit.order_number')
-                @include ('partials.forms.edit.datepicker', ['translated_name' => trans('general.purchase_date'),'fieldname' => 'purchase_date'])
-                @include ('partials.forms.edit.datepicker', ['translated_name' => trans('admin/hardware/form.eol_date'),'fieldname' => 'asset_eol_date'])
-                @include ('partials.forms.edit.supplier-select', ['translated_name' => trans('general.supplier'), 'fieldname' => 'supplier_id'])
-
-                @php
-                    $currency_type = null;
-                    if ($item->id && $item->location) {
-                        $currency_type = $item->location->currency;
-                    }
-                @endphp
-
-                @include ('partials.forms.edit.purchase_cost', ['currency_type' => $currency_type])
-
-            </div> <!-- end order details -->
-        </fieldset>
-    </div><!-- end col-md-12 col-sm-12-->
-   
+@parent
 @stop
 
+@section('header_right')
+<a href="{{ URL::previous() }}" class="btn btn-primary pull-right">
+  {{ trans('general.back') }}</a>
+@stop
+
+
+{{-- Some room for the modals --}}
+<div class="modal fade" id="createModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Modal title</h4>
+      </div>
+      <div class="modal-body">
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-name">{{ trans('general.name') }}*:
+          </label></div>
+          <div class="col-md-8 col-xs-12"><input type='text' id='modal-name' class="form-control"></div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-manufacturer_id">{{ trans('general.manufacturer') }}*:
+          </label></div>
+          <div class="col-md-8 col-xs-12">{{ Form::select('modal-manufacturer', $manufacturer , '', array('class'=>'select2 parent', 'style'=>'width:100%','id' =>'modal-manufacturer_id')) }}</div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-category_id">{{ trans('general.category') }}*:
+          </label></div>
+          <div class="col-md-8 col-xs-12">{{ Form::select('modal-category', $category ,'', array('class'=>'select2 parent', 'style'=>'width:100%','id' => 'modal-category_id')) }}</div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-modelno">{{ trans('general.model_no') }}*:</label></div>
+          <div class="col-md-8 col-xs-12"><input type='text' id='modal-modelno' class="form-control"></div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-statuslabel_types">{{ trans('admin/statuslabels/table.status_type') }}*:
+          </label></div>
+          <div class="col-md-8 col-xs-12">{{ Form::select('modal-statuslabel_types', $statuslabel_types, '', array('class'=>'select2', 'style'=>'width:100%','id' =>'modal-statuslabel_types')) }}</div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-city">{{ trans('general.city') }}*:</label></div>
+          <div class="col-md-8 col-xs-12"><input type='text' id='modal-city' class="form-control"></div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-country">{{ trans('general.country') }}*:</label></div>
+          <div class="col-md-8 col-xs-12">{!! Form::countries('country', Input::old('country'), 'select2 country',"modal-country") !!}</div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-first_name">{{ trans('general.first_name') }}*:</label></div>
+          <div class="col-md-8 col-xs-12"><input type='text' id='modal-first_name' class="form-control"></div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-last_name">{{ trans('general.last_name') }}*:</label></div>
+          <div class="col-md-8 col-xs-12"><input type='text' id='modal-last_name' class="form-control"></div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-username">{{ trans('admin/users/table.username') }}*:</label></div>
+          <div class="col-md-8 col-xs-12"><input type='text' id='modal-username' class="form-control"></div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-password">{{ trans('admin/users/table.password') }}*:</label></div>
+          <div class="col-md-8 col-xs-12"><input type='password' id='modal-password' class="form-control"></div>
+        </div>
+
+        <div class="dynamic-form-row">
+          <div class="col-md-4 col-xs-12"><label for="modal-password_confirm">{{ trans('admin/users/table.password_confirm') }}*:</label></div>
+          <div class="col-md-8 col-xs-12"><input type='password' id='modal-password_confirm' class="form-control"></div>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">{{ trans('button.cancel') }}</button>
+        <button type="button" class="btn btn-primary" id="modal-save">{{ trans('general.save') }}</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+{{-- Page content --}}
+
+@section('content')
+
+
+
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+    @if ($asset->id)
+     <form class="form-horizontal" method="post" action="{{ route('update/hardware',$asset->id) }}" autocomplete="off" role="form" enctype="multipart/form-data" >
+   @else
+     <form class="form-horizontal" method="post" action="{{ route('savenew/hardware') }}" autocomplete="off" role="form" enctype="multipart/form-data">
+   @endif
+
+
+
+    <div class="box box-default">
+      @if ($asset->id)
+        <div class="box-header with-border">
+          <h3 class="box-title">{{ $asset->showAssetName() }}</h3>
+        </div><!-- /.box-header -->
+      @endif
+
+      <div class="box-body">
+
+       <!-- CSRF Token -->
+       <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+
+       <!-- Asset Tag -->
+       <div class="form-group {{ $errors->has('asset_tag') ? ' has-error' : '' }}">
+           <label for="asset_tag" class="col-md-3 control-label">{{ trans('admin/hardware/form.tag') }}
+            *</label>
+            </label>
+               <div class="col-md-7 col-sm-12">
+                 @if  ($asset->id)
+         <input class="form-control" type="text" name="asset_tag" id="asset_tag" value="{{ Input::old('asset_tag', $asset->asset_tag) }}" />
+       @else
+         <input class="form-control" type="text" name="asset_tag" id="asset_tag" value="{{ Input::old('asset_tag', \App\Models\Asset::autoincrement_asset()) }}" />
+       @endif
+
+       {!! $errors->first('asset_tag', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+               </div>
+       </div>
+
+       <!-- Model -->
+       <div class="form-group {{ $errors->has('model_id') ? ' has-error' : '' }}">
+           <label for="parent" class="col-md-3 control-label">{{ trans('admin/hardware/form.model') }}
+            *</label>
+            </label>
+           <div class="col-md-7 col-sm-10">
+               @if (isset($selected_model))
+                   {{ Form::select('model_id', $model_list , $selected_model->id, array('class'=>'select2 model', 'style'=>'min-width:100%','id' =>'model_select_id')) }}
+
+               @else
+                   {{ Form::select('model_id', $model_list , Input::old('model_id', $asset->model_id), array('class'=>'select2 model', 'style'=>'min-width:100%','id' =>'model_select_id')) }}
+               @endif
+
+                <!-- onclick="return dependency('model')" -->
+               {!! $errors->first('model_id', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+
+           </div>
+           <div class="col-md-1 col-sm-1 text-left" style="margin-left: -20px; padding-top: 3px">
+              <a href='#' data-toggle="modal" data-target="#createModal" data-dependency="model" data-select="model_select_id"><i class="verticon fa fa-plus-square-o fa-2x"></i></a>
+              <span class="mac_spinner" style="padding-left: 10px; color: green; display:none; width: 30px;"><i class="fa fa-spinner fa-spin"></i> </span>
+           </div>
+       </div>
+
+
+       <div id='custom_fields_content'>
+         <!-- Custom Fields -->
+         @if ($asset->model && $asset->model->fieldset)
+           <?php $model=$asset->model; ?>
+         @endif
+         @if (Input::old('model_id'))
+            <?php $model=\App\Models\AssetModel::find(Input::old('model_id')); ?>
+         @elseif (isset($selected_model))
+            <?php $model=$selected_model; ?>
+         @endif
+         @if (isset($model) && $model)
+           @include("models/custom_fields_form",["model" => $model])
+         @endif
+       </div>
+
+       <!-- Status -->
+       <div class="form-group {{ $errors->has('status_id') ? ' has-error' : '' }}">
+           <label for="status_id" class="col-md-3 control-label">{{ trans('admin/hardware/form.status') }} *</label>
+               <div class="col-md-7 col-sm-11">
+                   {{ Form::select('status_id', $statuslabel_list , Input::old('status_id', $asset->status_id), array('class'=>'select2 status_id', 'style'=>'width:100%','id'=>'status_select_id')) }}
+
+
+                   <p class="help-block">{{ trans('admin/hardware/form.help_checkout') }}</p>
+                   {!! $errors->first('status_id', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+               </div>
+               <div class="col-md-1 col-sm-1 text-left" style="margin-left: -20px; padding-top: 3px">
+                 <a href='#' data-toggle="modal"  data-target="#createModal" data-dependency='statuslabel' data-select='status_select_id'><i class="verticon fa fa-plus-square-o fa-2x"></i></a>
+                 <span class="status_spinner" style="padding-left: 10px; color: green; display:none; width: 30px;"><i class="fa fa-spinner fa-spin"></i> </span>
+               </div>
+       </div>
+
+       @if (!$asset->id)
+        <!-- Assigned To -->
+       <div id="assigned_user" style="display: none;" class="form-group {{ $errors->has('assigned_to') ? ' has-error' : '' }}">
+           <label for="parent" class="col-md-3 control-label">{{ trans('admin/hardware/form.checkout_to') }}
+            </label>
+           <div class="col-md-7 col-sm-12">
+               {{ Form::select('assigned_to', $assigned_to , Input::old('assigned_to', $asset->assigned_to), array('class'=>'select2', 'id'=>'assigned_to', 'style'=>'width:100%')) }}
+
+               {!! $errors->first('assigned_to', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+           </div>
+           <div class="col-md-1 col-sm-1 text-left" style="margin-left: -20px; padding-top: 3px">
+              <a href='#' data-toggle="modal"  data-target="#createModal" data-dependency="user" data-select='assigned_to'><i class="verticon fa fa-plus-square-o fa-2x"></i></a>
+          </div>
+       </div>
+       @endif
+
+
+       <!-- Serial -->
+       <div class="form-group {{ $errors->has('serial') ? ' has-error' : '' }}">
+           <label for="serial" class="col-md-3 control-label">{{ trans('admin/hardware/form.serial') }} </label>
+           <div class="col-md-7 col-sm-12">
+               <input class="form-control" type="text" name="serial" id="serial" value="{{ Input::old('serial', $asset->serial) }}" />
+               {!! $errors->first('serial', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+           </div>
+       </div>
+
+       <!-- Asset Name -->
+       <div class="form-group {{ $errors->has('name') ? ' has-error' : '' }}">
+           <label for="name" class="col-md-3 control-label">{{ trans('admin/hardware/form.name') }}</label>
+               <div class="col-md-7 col-sm-12">
+                   <input class="form-control" type="text" name="name" id="name" value="{{ Input::old('name', $asset->name) }}" />
+                   {!! $errors->first('name', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+               </div>
+       </div>
+
+
+       <!-- Company -->
+       @if (\App\Models\Company::isCurrentUserAuthorized())
+         <div class="form-group {{ $errors->has('company_id') ? ' has-error' : '' }}">
+           <div class="col-md-3 control-label">{{ Form::label('company_id', Lang::get('general.company')) }}</div>
+           <div class="col-md-7 col-sm-12">
+             {{ Form::select('company_id', $company_list , Input::old('company_id', $asset->company_id),
+                             ['class'=>'select2', 'style'=>'min-width:100%']) }}
+             {!! $errors->first('company_id', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+           </div>
+         </div>
+       @endif
+
+       <!-- Purchase Date -->
+       <div class="form-group {{ $errors->has('purchase_date') ? ' has-error' : '' }}">
+           <label for="purchase_date" class="col-md-3 control-label">{{ trans('admin/hardware/form.date') }}</label>
+           <div class="input-group col-md-3">
+             <div class="input-group">
+
+                 <input type="text" class="datepicker form-control" data-date-format="yyyy-mm-dd" placeholder="yyyy-mm-dd" name="purchase_date" id="purchase_date" value="{{ Input::old('purchase_date', $asset->purchase_date) }}">
+               </div><!-- /.input group -->
+
+               <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+               {!! $errors->first('purchase_date', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+           </div>
+       </div>
+       <!-- Supplier -->
+       <div class="form-group {{ $errors->has('supplier_id') ? ' has-error' : '' }}">
+           <label for="supplier_id" class="col-md-3 control-label">{{ trans('admin/hardware/form.supplier') }}</label>
+           <div class="col-md-7 col-sm-11">
+               {{ Form::select('supplier_id', $supplier_list , Input::old('supplier_id', $asset->supplier_id), array('class'=>'select2', 'style'=>'min-width:100%','id'=>'supplier_select_id')) }}
+
+               {!! $errors->first('supplier_id', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+           </div>
+           <div class="col-md-1 col-sm-1 text-left" style="margin-left: -20px; padding-top: 3px">
+             <a href='#' data-toggle="modal"  data-target="#createModal" data-dependency="supplier" data-select='supplier_select_id'><i class="verticon fa fa-plus-square-o fa-2x"></i></a>
+           </div>
+       </div>
+
+       <!-- Order Number -->
+       <div class="form-group {{ $errors->has('order_number') ? ' has-error' : '' }}">
+           <label for="order_number" class="col-md-3 control-label">{{ trans('admin/hardware/form.order') }}</label>
+           <div class="col-md-7 col-sm-12">
+               <input class="form-control" type="text" name="order_number" id="order_number" value="{{ Input::old('order_number', $asset->order_number) }}" />
+               {!! $errors->first('order_number', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+           </div>
+       </div>
+
+       <!-- Purchase Cost -->
+       <div class="form-group {{ $errors->has('purchase_cost') ? ' has-error' : '' }}">
+               <label for="purchase_cost" class="col-md-3 control-label">{{ trans('admin/hardware/form.cost') }} </label>
+               <div class="col-md-2">
+                       <div class="input-group">
+                               <span class="input-group-addon">
+                                   @if (($asset->id) && ($asset->assetloc))
+                                       {{ $asset->assetloc->currency }}
+                                   @else
+                                       {{ \App\Models\Setting::first()->default_currency }}
+                                   @endif
+
+
+                               </span>
+                               <input class="col-md-2 form-control" type="text" name="purchase_cost" id="purchase_cost" value="{{ Input::old('purchase_cost', number_format($asset->purchase_cost,2)) }}" />
+                               {!! $errors->first('purchase_cost', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+                        </div>
+                </div>
+       </div>
+
+       <!-- Warranty -->
+       <div class="form-group {{ $errors->has('warranty_months') ? ' has-error' : '' }}">
+           <label for="warranty_months" class="col-md-3 control-label">{{ trans('admin/hardware/form.warranty') }}</label>
+           <div class="col-md-9">
+
+               <div class="input-group col-md-3" style="padding-left: 0px;">
+                 <input class="form-control" type="text" name="warranty_months" id="warranty_months" value="{{ Input::old('warranty_months', $asset->warranty_months) }}" />
+                 <span class="input-group-addon">{{ trans('admin/hardware/form.months') }}</span>
+               </div>
+               <div class="col-md-9" style="padding-left: 0px;">
+                 {!! $errors->first('warranty_months', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+               </div>
+
+
+           </div>
+       </div>
+
+
+
+       <!-- Notes -->
+       <div class="form-group {{ $errors->has('notes') ? ' has-error' : '' }}">
+           <label for="notes" class="col-md-3 control-label">{{ trans('admin/hardware/form.notes') }}</label>
+           <div class="col-md-7 col-sm-12">
+               <textarea class="col-md-6 form-control" id="notes" name="notes">{{ Input::old('notes', $asset->notes) }}</textarea>
+               {!! $errors->first('notes', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+           </div>
+       </div>
+
+       <!-- Default Location -->
+       <div class="form-group {{ $errors->has('rtd_location_id') ? ' has-error' : '' }}">
+           <label for="rtd_location_id" class="col-md-3 control-label">{{ trans('admin/hardware/form.default_location') }}</label>
+               <div class="col-md-7 col-sm-11">
+                   {{ Form::select('rtd_location_id', $location_list , Input::old('rtd_location_id', $asset->rtd_location_id), array('class'=>'select2', 'style'=>'width:100%','id'=>'rtd_location_select')) }}
+
+                   {!! $errors->first('rtd_location_id', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+               </div>
+               <div class="col-md-1 col-sm-1 text-left" style="margin-left: -20px; padding-top: 3px">
+                 <a href='#' data-toggle="modal" data-target="#createModal" data-dependency='location' data-select='rtd_location_select'><i class="verticon fa fa-plus-square-o fa-2x"></i></a>
+               </div>
+       </div>
+
+       <!-- Requestable -->
+       <div class="form-group">
+         <div class="col-sm-offset-3 col-sm-10">
+           <label>
+             <input type="checkbox" value="1" name="requestable" id="requestable" class="minimal" {{ Input::old('requestable', $asset->requestable) == '1' ? ' checked="checked"' : '' }}> {{ trans('admin/hardware/form.requestable') }}
+           </label>
+
+         </div>
+         </div>
+
+
+
+       <!-- Image -->
+       @if ($asset->image)
+           <div class="form-group {{ $errors->has('image_delete') ? 'has-error' : '' }}">
+               <label class="col-md-3 control-label" for="image_delete">{{ trans('general.image_delete') }}</label>
+               <div class="col-md-5">
+                   {{ Form::checkbox('image_delete'),array('class' => 'minimal') }}
+                   <img src="{{ config('app.url') }}/uploads/assets/{{ $asset->image }}" />
+                   {!! $errors->first('image_delete', '<span class="alert-msg">:message</span>') !!}
+               </div>
+           </div>
+       @endif
+
+       <div class="form-group {{ $errors->has('image') ? 'has-error' : '' }}">
+           <label class="col-md-3 control-label" for="image">{{ trans('general.image_upload') }}</label>
+           <div class="col-md-5">
+               {{ Form::file('image') }}
+               {!! $errors->first('image', '<span class="alert-msg">:message</span>') !!}
+           </div>
+       </div>
+
+
+
+      </div><!-- /.box-body -->
+      <div class="box-footer text-right">
+        <a class="btn btn-link" href="{{ URL::previous() }}" method="post" enctype="multipart/form-data">{{ trans('button.cancel') }}</a>
+        <button type="submit" class="btn btn-success"><i class="fa fa-check icon-white"></i> {{ trans('general.save') }}</button>
+      </div><!-- /.box-footer -->
+    </div><!-- /.box -->
+
+
+    </form>
+    </div>
+</div>
+
+
 @section('moar_scripts')
+<script>
 
 
 
-<script nonce="{{ csrf_token() }}">
-
-    @if(Request::has('model_id'))
-        //TODO: Refactor custom fields to use Livewire, populate from server on page load when requested with model_id
-    $(document).ready(function() {
-        fetchCustomFields()
-    });
-    @endif
-
-    var transformed_oldvals={};
-
-    function fetchCustomFields() {
-        //save custom field choices
-        var oldvals = $('#custom_fields_content').find('input,select,textarea').serializeArray();
-        for(var i in oldvals) {
-            transformed_oldvals[oldvals[i].name]=oldvals[i].value;
-        }
-
-        var modelid = $('#model_select_id').val();
-        if (modelid == '') {
-            $('#custom_fields_content').html("");
-        } else {
-
-            $.ajax({
-                type: 'GET',
-                url: "{{ config('app.url') }}/models/" + modelid + "/custom_fields",
-                headers: {
-                    "X-Requested-With": 'XMLHttpRequest',
-                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content')
-                },
-                _token: "{{ csrf_token() }}",
-                dataType: 'html',
-                success: function (data) {
-                    $('#custom_fields_content').html(data);
-                    $('#custom_fields_content select').select2(); //enable select2 on any custom fields that are select-boxes
-                    //now re-populate the custom fields based on the previously saved values
-                    $('#custom_fields_content').find('input,select,textarea').each(function (index,elem) {
-                        if(transformed_oldvals[elem.name]) {
-                            if (elem.type === 'checkbox' || elem.type === 'radio'){
-                                let shouldBeChecked = oldvals.find(oldValElement => {
-                                    return oldValElement.name === elem.name && oldValElement.value === $(elem).val();
-                                });
-
-                                if (shouldBeChecked){
-                                    $(elem).prop('checked', true);
-                                }
-
-                                return;
-                            }
-                             {{-- If there already *is* is a previously-input 'transformed_oldvals' handy,
-                                  overwrite with that previously-input value *IF* this is an edit of an existing item *OR*
-                                  if there is no new default custom field value coming from the model --}}
-                            if({{ $item->id ? 'true' : 'false' }} || $(elem).val() == '') {
-                                $(elem).val(transformed_oldvals[elem.name]).trigger('change'); //the trigger is for select2-based objects, if we have any
-                            }
-                        }
-
-                    });
-                }
-            });
-        }
+$(function() {
+  $('#model_select_id').on("change",function () {
+    // console.warn("Model Id has changed!");
+    var modelid=$('#model_select_id').val();
+    if(modelid=='') {
+      $('#custom_fields_content').html("");
+    } else {
+      // console.warn("Model ID is: "+modelid);
+      $.get("{{config('app.url')}}/hardware/models/"+modelid+"/custom_fields",{_token: "{{ csrf_token() }}"},function (data) {
+        // console.warn("Ajax call came back okay! Data is: "+data);
+        $('#custom_fields_content').html(data);
+      });
     }
+  });
+});
 
-    function user_add(status_id) {
-
-        if (status_id != '') {
-            $(".status_spinner").css("display", "inline");
-            $.ajax({
-                url: "{{config('app.url') }}/api/v1/statuslabels/" + status_id + "/deployable",
-                headers: {
-                    "X-Requested-With": 'XMLHttpRequest',
-                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr('content')
-                },
-                success: function (data) {
-                    $(".status_spinner").css("display", "none");
-                    $("#selected_status_status").fadeIn();
-
-                    if (data == true) {
-                        $("#assignto_selector").show();
-                        $("#assigned_user").show();
-
-                        $("#selected_status_status").removeClass('text-danger');
-                        $("#selected_status_status").addClass('text-success');
-                        $("#selected_status_status").html('<x-icon type="checkmark" /> {{ trans('admin/hardware/form.asset_deployable')}}');
-
-
-                    } else {
-                        $("#assignto_selector").hide();
-                        $("#selected_status_status").removeClass('text-success');
-                        $("#selected_status_status").addClass('text-danger');
-                        $("#selected_status_status").html('<x-icon type="warning" /> {{ (($item->assigned_to!='') && ($item->assigned_type!='') && ($item->deleted_at == '')) ? trans('admin/hardware/form.asset_not_deployable_checkin') : trans('admin/hardware/form.asset_not_deployable')  }} ');
-                    }
-                }
-            });
-        }
-    }
-
-
-    $(function () {
-        //grab custom fields for this model whenever model changes.
-        $('#model_select_id').on("change", fetchCustomFields);
-
-        //initialize assigned user/loc/asset based on statuslabel's statustype
+    $(function() {
         user_add($(".status_id option:selected").val());
-
-        //whenever statuslabel changes, update assigned user/loc/asset
-        $(".status_id").on("change", function () {
-            user_add($(".status_id").val());
-        });
-
     });
 
+	var $statusSelect = $(".status_id");
+	$statusSelect.on("change", function () {
+        user_add($statusSelect.val());
+    });
 
-    // Add another asset tag + serial combination if the plus sign is clicked
-    $(document).ready(function() {
+	function user_add(status_id) {
+        console.log(status_id);
 
-        var max_fields      = 100; //maximum input boxes allowed
-        var wrapper         = $(".input_fields_wrap"); //Fields wrapper
-        var add_button      = $(".add_field_button"); //Add button ID
-        var x = {{ old('asset_tags') ? count(old('asset_tags')) : 1  /* If we have old() data, use that to determine the 'next' number for 'Asset Tag 2' etc. Otherwise, use 1 */ }}; //initial text box count
+        if(status_id!=''){
+            $(".status_spinner").css("display", "inline");
+    	    $.ajax({
+    	        url: "{{config('app.url')}}/api/statuslabels/"+status_id+"/deployable",
+    	        success: function(data) {
+                    console.log(data);
+                    $(".status_spinner").css("display", "none");
 
-
-
-
-        $(add_button).click(function(e){ //on add input button click
-
-            e.preventDefault();
-
-            var auto_tag = $("#asset_tag").val().replace(/^{{ preg_quote(App\Models\Setting::getSettings()->auto_increment_prefix, '/') }}/g, '');
-            var box_html        = '';
-			const zeroPad 		= (num, places) => String(num).padStart(places, '0');
-
-            // Check that we haven't exceeded the max number of asset fields
-            if (x < max_fields) {
-
-                if (auto_tag!='') {
-                     auto_tag = zeroPad(parseInt(auto_tag) + parseInt(x),auto_tag.length);
-                } else {
-                     auto_tag = '';
-                }
-
-                x++; //text box increment
-
-                // NOTE - this is duplicated in the blade itself in order to re-display an attempt to insert multiple assets
-                // So if this changes, that needs to change too.
-                box_html += '<span class="fields_wrapper">';
-                box_html += '<div class="form-group"><label for="asset_tag" class="col-md-3 control-label">{{ trans('admin/hardware/form.tag') }} ' + x + '</label>';
-                box_html += '<div class="col-md-7 col-sm-12 required">';
-                box_html += '<input type="text"  class="form-control" name="asset_tags[' + x + ']" value="{{ (($snipeSettings->auto_increment_prefix!='') && ($snipeSettings->auto_increment_assets=='1')) ? $snipeSettings->auto_increment_prefix : '' }}'+ auto_tag +'" required>';
-                box_html += '</div>';
-                box_html += '<div class="col-md-2 col-sm-12">';
-                box_html += '<a href="#" class="remove_field btn btn-sm btn-theme"><x-icon type="minus" /></a>';
-                box_html += '</div>';
-                // box_html += '</div>';
-                box_html += '</div>';
-                box_html += '<div class="form-group"><label for="serial" class="col-md-3 control-label">{{ trans('admin/hardware/form.serial') }} ' + x + '</label>';
-                box_html += '<div class="col-md-7 col-sm-12">';
-                box_html += '<input type="text"  class="form-control" name="serials[' + x + ']">';
-                box_html += '</div>';
-                box_html += '</div>';
-                box_html += '</span>';
-                $(wrapper).append(box_html);
-
-            // We have reached the maximum number of extra asset fields, so disable the button
-            } else {
-                $(".add_field_button").attr('disabled');
-                $(".add_field_button").addClass('disabled');
-            }
-        });
-
-        $(wrapper).on("click",".remove_field", function(e){ //user clicks on remove text
-            $(".add_field_button").removeAttr('disabled');
-            $(".add_field_button").removeClass('disabled');
-            e.preventDefault();
-            //console.log(x);
-
-            $(this).parent('div').parent('div').parent('span').remove();
-            x--;
-        });
-
-
-        $('.expand').click(function(){
-            id = $(this).attr('id');
-            fields = $(this).text();
-            if (txt == '+'){
-                $(this).text('-');
-            }
-            else{
-                $(this).text('+');
-            }
-            $("#"+id).toggle();
-
-        });
-
-        {{-- TODO: Clean up some of the duplication in here. Not too high of a priority since we only copied it once. --}}
-        $("#optional_info").on("click",function(){
-            $('#optional_details').fadeToggle(100);
-            $('#optional_info_icon').toggleClass('fa-caret-right fa-caret-down');
-            var optional_info_open = $('#optional_info_icon').hasClass('fa-caret-down');
-            document.cookie = "optional_info_open="+optional_info_open+'; path=/';
-        });
-
-        $("#order_info").on("click",function(){
-            $('#order_details').fadeToggle(100);
-            $("#order_info_icon").toggleClass('fa-caret-right fa-caret-down');
-            var order_info_open = $('#order_info_icon').hasClass('fa-caret-down');
-            document.cookie = "order_info_open="+order_info_open+'; path=/';
-        });
-
-        var all_cookies = document.cookie.split(';')
-        for(var i in all_cookies) {
-            var trimmed_cookie = all_cookies[i].trim(' ')
-            if (trimmed_cookie.startsWith('optional_info_open=')) {
-                elems = all_cookies[i].split('=', 2)
-                if (elems[1] == 'true') {
-                    $('#optional_info').trigger('click')
-                }
-            }
-            if (trimmed_cookie.startsWith('order_info_open=')) {
-                elems = all_cookies[i].split('=', 2)
-                if (elems[1] == 'true') {
-                    $('#order_info').trigger('click')
-                }
-            }
+    	            if(data == true){
+    	                 $("#assigned_user").css("display", "block");
+    	            } else {
+    	                 $("#assigned_user").css("display", "none");
+    	            }
+    	        }
+    	    });
         }
+	};
 
+$(function () {
+  var model,select;
+
+  $('#createModal').on("show.bs.modal",function (event) {
+    var link = $(event.relatedTarget);
+    // data-dependency="model" data-select="model_select_id"
+    model=link.data("dependency");
+    select=link.data("select");
+
+    var modal = $(this);
+    modal.find('.modal-title').text('Add a new ' + model);
+    //modal.find('.modal-body').text("This is where I should be AJAX'ing in the contents for the new " +model+" that you'are about to add!");
+    //use a spinner instead?
+    //$('.dynamic-form-element').hide();
+    //$('.modal-body input').parent().parent().hide();
+    //$('.modal-body select').parent().parent().hide();
+    $('.dynamic-form-row').hide();
+    function show_er(selector) {
+      //$(selector).show().parent().show();
+      $(selector).parent().parent().show();
+    }
+    show_er('#modal-name');
+    switch(model) {
+      case 'model':
+      show_er('#modal-manufacturer_id');
+      show_er('#modal-category_id');
+      show_er('#modal-modelno');
+      break;
+
+      case 'user':
+      $('.dynamic-form-row').hide(); //we don't want a generic "name"
+      show_er("#modal-first_name");
+      show_er("#modal-last_name");
+      show_er("#modal-username");
+      show_er("#modal-password");
+      show_er("#modal-password_confirm");
+      break;
+
+      case 'location':
+      show_er('#modal-city');
+      show_er('#modal-country');
+      break;
+
+      case 'statuslabel':
+      show_er("#modal-statuslabel_types");
+      break;
+
+      case 'supplier':
+
+      //do nothing, they just need 'name'
+    }
+
+    //console.warn("The Model is: "+model+" and the select is: "+select);
+  });
+
+  $('#modal-save').on('click',function () {
+    var data={};
+    //console.warn("We are about to SAVE!!! for model: "+model+" and select ID: "+select);
+    $('.modal-body input:visible').each(function (index,elem) {
+      //console.warn("["+index+"]: "+elem.id+" = "+$(elem).val());
+      var bits=elem.id.split("-");
+      if(bits[0]==="modal") {
+        data[bits[1]]=$(elem).val();
+      }
+    });
+    $('.modal-body select:visible').each(function (index,elem) {
+      var bits=elem.id.split("-");
+      data[bits[1]]=$(elem).val();
     });
 
+    data._token =  '{{ csrf_token() }}',
+    //console.dir(data);
 
+    $.post("{{config('app.url')}}/api/"+model+"s",data,function (result) {
+      var id=result.id;
+      var name=result.name || (result.first_name+" "+result.last_name);
+      $('.modal-body input:visible').val("");
+      $('#createModal').modal('hide');
 
+      //console.warn("The select ID thing we're going for is: "+select);
+      var selector=document.getElementById(select);
+      selector.options[selector.length]=new Option(name,id);
+      selector.selectedIndex=selector.length-1;
+      $(selector).trigger("change");
+    }).fail(function (result) {
+      //console.dir(result.responseJSON);
+      msg=result.responseJSON.error.message || result.responseJSON.error;
+      window.alert("Unable to add new "+model+" - error: "+msg);
+    });
 
+  });
+});
 </script>
+@stop
 @stop

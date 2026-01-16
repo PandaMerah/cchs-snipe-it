@@ -1,8 +1,6 @@
 <?php
 
 return array(
-    'about_suppliers_title' => 'Sobre os fornecedores',
-    'about_suppliers_text'  => 'Fornecedores são usados para seguir a origem de itens',
     'address'               => 'Morada do Fornecedor',
     'assets'                => 'Artigos',
     'city'                  => 'Cidade',
@@ -19,6 +17,7 @@ return array(
     'state'                 => 'Distrito',
     'suppliers'             => 'Fornecedores',
     'update'                => 'Atualizar Fornecedor',
+    'url'                   => 'URL',
     'view'                  => 'Ver Fornecedor',
     'view_assets_for'       => 'Ver Artigos para',
     'zip'                   => 'Código postal',

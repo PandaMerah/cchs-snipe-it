@@ -31,4 +31,5 @@ class AddLicensedToLicensesTable extends Migration
             $table->dropColumn('license_email');
         });
     }
+
 }

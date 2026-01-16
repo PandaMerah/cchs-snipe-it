@@ -1,11 +1,10 @@
 <?php
 
-return [
+return array(
 
     'id'      => 'ID',
-    'months'   => '月數',
-    'term'   => '期限',
-    'title'      => '名稱',
-    'depreciation_min' => '最低價值',
+    'months'   => 'Months',
+    'term'   => 'Term',
+    'title'      => 'Name ',
 
-];
+);

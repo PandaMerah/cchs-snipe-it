@@ -2,11 +2,8 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Asset;
-use App\Models\CustomField;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Console\Command;
+use DB;
 
 class PaveIt extends Command
 {
@@ -15,14 +12,14 @@ class PaveIt extends Command
      *
      * @var string
      */
-    protected $signature = 'snipeit:pave  {--force : Skip the interactive yes/no prompt for confirmation}';
+    protected $signature = 'pave';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Clear the database tables, leaving all migrations, table structure, and the first user in place. (It is primarily a quick tool for developers.) If you want to destroy all tables as well, use php artisan db:wipe.';
+    protected $description = 'Pave the database to start over. This should ALMOST NEVER BE USED. (It is primarily a quick tool for developers.)';
 
     /**
      * Create a new command instance.
@@ -42,53 +39,42 @@ class PaveIt extends Command
     public function handle()
     {
 
-        if (!$this->option('force')) {
-            $confirmation = $this->confirm("\n****************************************************\nTHIS WILL DELETE ALL OF THE DATA IN YOUR DATABASE. \nThere is NO undo. This WILL destroy ALL of your data, \nINCLUDING ANY non-Snipe-IT tables you have in this database. \n****************************************************\n\nDo you wish to continue? No backsies! ");
-            if (!$confirmation) {
-                $this->error('ABORTING');
-                exit(-1);
-            }
+        if ($this->confirm("\n****************************************************\nTHIS WILL DROP ALL OF THE TABLES IN YOUR DATABASE. \nThere is NO undo. This WILL destroy ALL of your data. \n****************************************************\n\nDo you wish to continue? No backsies! [y|N]")) {
+
+          \DB::statement('drop table IF EXISTS accessories_users');
+          \DB::statement('drop table IF EXISTS accessories');
+          \DB::statement('drop table IF EXISTS asset_logs');
+          \DB::statement('drop table IF EXISTS asset_maintenances');
+          \DB::statement('drop table IF EXISTS asset_uploads');
+          \DB::statement('drop table IF EXISTS assets');
+          \DB::statement('drop table IF EXISTS categories');
+          \DB::statement('drop table IF EXISTS companies');
+          \DB::statement('drop table IF EXISTS consumables_users');
+          \DB::statement('drop table IF EXISTS consumables');
+          \DB::statement('drop table IF EXISTS custom_field_custom_fieldset');
+          \DB::statement('drop table IF EXISTS custom_fields');
+          \DB::statement('drop table IF EXISTS custom_fieldsets');
+          \DB::statement('drop table IF EXISTS depreciations');
+          \DB::statement('drop table IF EXISTS groups');
+          //\DB::statement('drop table IF EXISTS history');
+          \DB::statement('drop table IF EXISTS license_seats');
+          \DB::statement('drop table IF EXISTS licenses');
+          \DB::statement('drop table IF EXISTS locations');
+          \DB::statement('drop table IF EXISTS manufacturers');
+          \DB::statement('drop table IF EXISTS models');
+          \DB::statement('drop table IF EXISTS migrations');
+          \DB::statement('drop table IF EXISTS password_resets');
+          \DB::statement('drop table IF EXISTS requested_assets');
+          \DB::statement('drop table IF EXISTS requests');
+          \DB::statement('drop table IF EXISTS settings');
+          \DB::statement('drop table IF EXISTS status_labels');
+          \DB::statement('drop table IF EXISTS suppliers');
+          \DB::statement('drop table IF EXISTS throttle');
+          \DB::statement('drop table IF EXISTS users_groups');
+          \DB::statement('drop table IF EXISTS users');
+
+
         }
 
-        // List all the tables in the database so we don't have to worry about missing some as the app grows
-        $tables = Schema::getTables();
-        $except_tables = [
-            'oauth_access_tokens',
-            'oauth_clients',
-            'oauth_personal_access_clients',
-            'migrations',
-            'settings',
-            'users',
-            'telescope_entries',
-            'telescope_entries_tags',
-            'telescope_monitoring',
-        ];
-
-        // We only need to find out what these are so we can nuke these columns on the assets table.
-        $custom_fields = CustomField::get();
-        foreach ($custom_fields as $custom_field) {
-            $this->info('DROP the '.$custom_field->db_column.' column from assets as well.');
-
-            if (Schema::hasColumn('assets', $custom_field->db_column)) {
-                Schema::table('assets', function ($table) use ($custom_field) {
-                    $table->dropColumn($custom_field->db_column);
-                });
-            }
-        }
-
-        foreach ($tables as $table_obj) {
-            $table = $table_obj['name'];
-            if (in_array($table, $except_tables)) {
-                $this->info($table. ' is SKIPPED.');
-            } else {
-                \DB::statement('truncate '.$table);
-                $this->info($table. ' is TRUNCATED.');
-            }
-        }
-
-        // Leave in the demo oauth keys so we don't have to reset them every day in the demos
-        DB::statement('delete from oauth_clients WHERE id > 2');
-        DB::statement('delete from oauth_access_tokens WHERE user_id > 2');
-    
     }
 }

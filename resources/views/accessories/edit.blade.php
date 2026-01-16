@@ -1,34 +1,199 @@
-@extends('layouts/edit-form', [
-    'createText' => trans('admin/accessories/general.create') ,
-    'updateText' => trans('admin/accessories/general.update'),
-    'helpPosition'  => 'right',
-    'helpText' => trans('help.accessories'),
-    'formAction' => (isset($item->id)) ? route('accessories.update', ['accessory' => $item->id]) : route('accessories.store'),
-    'index_route' => 'accessories.index',
-    'options' => [
-                'back' => trans('admin/hardware/form.redirect_to_type',['type' => trans('general.previous_page')]),
-                'index' => trans('admin/hardware/form.redirect_to_all', ['type' => 'accessories']),
-                'item' => trans('admin/hardware/form.redirect_to_type', ['type' => trans('general.accessory')]),
-               ]
-])
+@extends('layouts/default')
+
+{{-- Page title --}}
+@section('title')
+    @if ($accessory->id)
+        {{ trans('admin/accessories/general.update') }}
+    @else
+        {{ trans('admin/accessories/general.create') }}
+    @endif
+@parent
+@stop
+
+@section('header_right')
+<a href="{{ URL::previous() }}" class="btn btn-primary">
+  {{ trans('general.back') }}</a>
+
+
+
+@stop
+
 
 {{-- Page content --}}
-@section('inputFields')
+@section('content')
 
-@include ('partials.forms.edit.company-select', ['translated_name' => trans('general.company'), 'fieldname' => 'company_id'])
-@include ('partials.forms.edit.name', ['translated_name' => trans('admin/accessories/general.accessory_name')])
-@include ('partials.forms.edit.category-select', ['translated_name' => trans('general.category'), 'fieldname' => 'category_id', 'required' => 'true','category_type' => 'accessory'])
-@include ('partials.forms.edit.supplier-select', ['translated_name' => trans('general.supplier'), 'fieldname' => 'supplier_id'])
-@include ('partials.forms.edit.manufacturer-select', ['translated_name' => trans('general.manufacturer'), 'fieldname' => 'manufacturer_id'])
-@include ('partials.forms.edit.location-select', ['translated_name' => trans('general.location'), 'fieldname' => 'location_id'])
-@include ('partials.forms.edit.model_number')
-@include ('partials.forms.edit.order_number')
-@include ('partials.forms.edit.datepicker', ['translated_name' => trans('general.purchase_date'),'fieldname' => 'purchase_date'])
-@include ('partials.forms.edit.purchase_cost', ['currency_type' => $item->location->currency ?? null, 'unit_cost' => trans('general.unit_cost')])
-@include ('partials.forms.edit.quantity')
-@include ('partials.forms.edit.minimum_quantity')
-@include ('partials.forms.edit.notes')
-@include ('partials.forms.edit.image-upload', ['image_path' => app('accessories_upload_path')])
 
+<div class="row">
+  <div class="col-md-8 col-md-offset-2">
+
+    <div class="box box-default">
+
+      <div class="box-header with-border">
+
+          <h3 class="box-title">
+            @if ($accessory->id)
+            {{ $accessory->name }}
+            @endif
+          </h3>
+          <div class="box-tools pull-right">
+            <button class="slideout-menu-toggle btn btn-box-tool btn-box-tool-lg" data-toggle="tooltip" title="Help"><i class="fa fa-question"></i></button>
+          </div>
+      </div><!-- /.box-header -->
+
+
+
+
+      <!-- form start -->
+      <form class="form-horizontal" method="post" action="" autocomplete="off">
+
+      <!-- CSRF Token -->
+      <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+
+      <div class="box-body">
+        <div class="col-md-0 col-md-offset-1">
+        @if (\App\Models\Company::isCurrentUserAuthorized())
+          <!-- Company -->
+          <div class="form-group{{ $errors->has('company_id') ? ' has-error' : '' }}">
+               <div class="col-md-3">
+                   {{ Form::label('company_id', Lang::get('general.company')) }}
+               </div>
+                  <div class="col-md-8">
+                    {{ Form::select('company_id', $company_list , Input::old('company_id', $accessory->company_id), array('class'=>'select2', 'style'=>'width:100%')) }}
+                    {!! $errors->first('company_id', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+                  </div>
+          </div>
+        @endif
+
+        <!-- Name -->
+        <div class="form-group{{ $errors->has('name') ? ' has-error' : '' }}">
+            <div class="col-md-3">
+            	{{ Form::label('name', Lang::get('admin/accessories/general.accessory_name')) }}
+            </div>
+            <div class="col-md-8">
+                <input class="form-control" type="text" name="name" id="name" value="{{ Input::old('name', $accessory->name) }}" />
+                {!! $errors->first('name', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+            </div>
+        </div>
+
+    	<!-- Category -->
+        <div class="form-group{{ $errors->has('category_id') ? ' has-error' : '' }}">
+    	     <div class="col-md-3">
+    		     {{ Form::label('category_id', Lang::get('admin/accessories/general.accessory_category')) }}
+             </div>
+                <div class="col-md-7">
+                    {{ Form::select('category_id', $category_list , Input::old('category_id', $accessory->category_id), array('class'=>'select2', 'style'=>'width:100%')) }}
+                    {!! $errors->first('category_id', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+                </div>
+        </div>
+
+        <!--  Location -->
+        <div class="form-group{{ $errors->has('location_id') ? ' has-error' : '' }}">
+           <div class="col-md-3">
+           {{ Form::label('location_id', Lang::get('general.location')) }}
+           </div>
+                <div class="col-md-7 col-sm-12">
+                    {{ Form::select('location_id', $location_list , Input::old('location_id', $accessory->location_id), array('class'=>'select2', 'style'=>'width:100%')) }}
+
+                    {!! $errors->first('location_id', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+                </div>
+        </div>
+
+        <!-- Order Number -->
+        <div class="form-group{{ $errors->has('order_number') ? ' has-error' : '' }}">
+            <div class="col-md-3">
+    		     {{ Form::label('order_number', Lang::get('admin/accessories/general.order')) }}
+            </div>
+            <div class="col-md-3">
+                <input class="form-control" type="text" name="order_number" id="order_number" value="{{ Input::old('order_number', $accessory->order_number) }}" />
+                {!! $errors->first('order_number', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+            </div>
+        </div>
+
+
+        <!-- Purchase Date -->
+        <div class="form-group{{ $errors->has('purchase_date') ? ' has-error' : '' }}">
+            <div class="col-md-3">
+    		     {{ Form::label('purchase_date', Lang::get('admin/accessories/general.date')) }}
+            </div>
+            <div class="input-group col-md-3">
+                <input type="date" class="datepicker form-control" data-date-format="yyyy-mm-dd" placeholder="{{ trans('general.select_date') }}" name="purchase_date" id="purchase_date" value="{{ Input::old('purchase_date', $accessory->purchase_date) }}">
+                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+                {!! $errors->first('purchase_date', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+            </div>
+        </div>
+
+        <!-- Purchase Cost -->
+        <div class="form-group{{ $errors->has('purchase_cost') ? ' has-error' : '' }}">
+            <div class="col-md-3">
+    		     {{ Form::label('purchase_cost', Lang::get('admin/accessories/general.cost')) }}
+            </div>
+            <div class="col-md-3">
+                <div class="input-group">
+                    <span class="input-group-addon">
+                        {{ \App\Models\Setting::first()->default_currency }}
+                    </span>
+                    <input class="col-md-3 form-control" type="text" name="purchase_cost" id="purchase_cost" value="{{ Input::old('purchase_cost', number_format($accessory->purchase_cost,2)) }}" />
+                    {!! $errors->first('purchase_cost', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+                </div>
+            </div>
+          </div>
+
+        <!-- QTY -->
+        <div class="form-group{{ $errors->has('qty') ? ' has-error' : '' }}">
+            <div class="col-md-3">
+            	{{ Form::label('qty', Lang::get('admin/accessories/general.qty')) }}
+            </div>
+            <div class="col-md-9" style="margin-left: -15px">
+                <div class="col-md-3">
+    	           <input class="form-control col-md-2" type="text" name="qty" id="qty" value="{{ Input::old('qty', $accessory->qty) }}" />
+               </div>
+               <div class="col-md-12">
+                {!! $errors->first('qty', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+              </div>
+            </div>
+          </div>
+
+
+        <!-- Min QTY -->
+        <div class="form-group{{ $errors->has('min_amt') ? ' has-error' : '' }}">
+            <div class="col-md-3">
+            	{{ Form::label('min_amt', Lang::get('general.min_amt')) }}
+            </div>
+            <div class="col-md-9" style="margin-left: -15px">
+                <div class="col-md-2">
+    	           <input class="form-control col-md-3" type="text" name="min_amt" id="min_amt" value="{{ Input::old('qty', $accessory->min_amt) }}" />
+               </div>
+               <div class="col-md-7" style="margin-left: -15px;">
+                 <a href="#" data-toggle="tooltip" title="{{ trans('general.min_amt_help') }}"><i class="fa fa-info-circle"></i></a>
+               </div>
+               <div class="col-md-12">
+                {!! $errors->first('min_amt', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+              </div>
+            </div>
+          </div>
+
+
+      </div>
+
+      <div class="box-footer text-right">
+        <button type="submit" class="btn btn-success"><i class="fa fa-check icon-white"></i> {{ trans('general.save') }}</button>
+      </div>
+    </div>
+  </div>
+
+
+</form>
+
+</div>
+</div>
+
+
+<div class="slideout-menu">
+  <a href="#" class="slideout-menu-toggle pull-right">×</a>
+	<h3>
+    {{ trans('admin/accessories/general.about_accessories_title') }}
+  </h3>
+	<p>{{ trans('admin/accessories/general.about_accessories_text') }} </p>
+</div>
 
 @stop

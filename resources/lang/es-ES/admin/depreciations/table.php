@@ -1,11 +1,10 @@
 <?php
 
-return [
+return array(
 
     'id'      => 'ID',
     'months'   => 'Meses',
     'term'   => 'Termina',
     'title'      => 'Nombre ',
-    'depreciation_min' => 'Valor mínimo',
 
-];
+);

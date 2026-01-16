@@ -12,7 +12,8 @@ class AddQrCodeToSettingsTable extends Migration
     public function up()
     {
         Schema::table('settings', function ($table) {
-            $table->integer('qr_code')->nullable()->default(null);
+            $table->integer('qr_code')->nullable()->default(NULL);
+
         });
     }
 
@@ -27,4 +28,5 @@ class AddQrCodeToSettingsTable extends Migration
             $table->dropColumn('qr_code');
         });
     }
+
 }

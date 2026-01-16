@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateCategoriesTable extends Migration
 {
-    /**
+/**
      * Run the migrations.
      *
      * @return void
@@ -29,4 +29,5 @@ class CreateCategoriesTable extends Migration
     {
         Schema::drop('categories');
     }
+
 }

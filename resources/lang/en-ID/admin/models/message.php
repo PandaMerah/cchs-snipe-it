@@ -2,46 +2,30 @@
 
 return array(
 
-    'deleted' => 'Hapus model asset',
-    'does_not_exist' => 'Model tidak ada.',
-    'no_association' => '!',
-    'no_association_fix' => '.',
-    'assoc_users'	 => 'Model ini saat ini dikaitkan dengan satu atau lebih aset dan tidak dapat dihapus. Harap hapus asetnya, lalu coba hapus lagi. ',
-    'invalid_category_type' => 'This category must be an asset category.',
+    'does_not_exist' => 'Model does not exist.',
+    'assoc_users'	 => 'This model is currently associated with one or more assets and cannot be deleted. Please delete the assets, and then try deleting again. ',
+
 
     'create' => array(
-        'error'   => 'Model tidak dibuat, silahkan dicoba lagi.',
-        'success' => 'Model berhasil dibuat.',
-        'duplicate_set' => 'Model aset dengan nama, nama produsen dan nomor model yang sudah ada.',
+        'error'   => 'Model was not created, please try again.',
+        'success' => 'Model created successfully.',
+        'duplicate_set' => 'An asset model with that name, manufacturer and model number already exists.',
     ),
 
     'update' => array(
-        'error'   => 'Model tidak diperbarui, silahkan dicoba lagi',
-        'success' => 'Model berhasil diperbarui.',
+        'error'   => 'Model was not updated, please try again',
+        'success' => 'Model updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Yakin ingin menghapus model aset ini?',
-        'error'   => 'Terjadi masalah saat menghapus model. Silahkan coba lagi.',
-        'success' => 'Model berhasil dihapus.'
+        'confirm'   => 'Are you sure you wish to delete this asset model?',
+        'error'   => 'There was an issue deleting the model. Please try again.',
+        'success' => 'The model was deleted successfully.'
     ),
 
     'restore' => array(
-        'error'   		=> 'Aset tidak dikembalikan, coba lagi',
-        'success' 		=> 'Model berhasil dikembalikan.'
-    ),
-
-    'bulkedit' => array(
-        'error'   		=> 'Tidak ada bidang yang berubah, jadi tidak ada yang diperbarui.',
-        'success' 		=> 'Model successfully updated. |:model_count models successfully updated.',
-        'warn'          => 'You are about to update the properties of the following model:|You are about to edit the properties of the following :model_count models:',
-
-    ),
-
-    'bulkdelete' => array(
-        'error'   		    => 'Tidak ada model yang dipilih, jadi tidak ada yang dihapus.',
-        'success' 		    => 'Model deleted!|:success_count models deleted!',
-        'success_partial' 	=> ':success_count model(s) telah dihapus, namun: fail_count tidak dapat dihapus karena mereka masih memiliki aset yang terkait dengannya.'
+        'error'   		=> 'Model was not restored, please try again',
+        'success' 		=> 'Model restored successfully.'
     ),
 
 );

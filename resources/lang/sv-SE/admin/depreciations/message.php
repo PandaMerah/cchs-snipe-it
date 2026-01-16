@@ -2,24 +2,24 @@
 
 return array(
 
-    'does_not_exist' => 'Denna värdeminskningskategori existerar inte.',
-    'assoc_users'	 => 'Denna värdeminskning är för närvarande kopplad till en eller flera modeller och kan inte raderas. Ta bort modellerna och försök sedan radera igen. ',
+    'does_not_exist' => 'Denna avskrivningskategori existerar inte.',
+    'assoc_users'	 => 'This depreciation is currently associated with one or more models and cannot be deleted. Please delete the models, and then try deleting again. ',
 
 
     'create' => array(
-        'error'   => 'Värdeminskningsklassen skapades inte, vänligen försök igen.',
-        'success' => 'Värdeminskningsklassen skapades.'
+        'error'   => 'Depreciation class was not created, please try again. :(',
+        'success' => 'Depreciation class created successfully. :)'
     ),
 
     'update' => array(
-        'error'   => 'Värdeminskningsklassen uppdaterades inte, vänligen försök igen',
-        'success' => 'Värdeminskningsklassen uppdaterades.'
+        'error'   => 'Depreciation class was not updated, please try again',
+        'success' => 'Depreciation class updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Är du säker på att du vill ta bort denna värdeminskningsklass?',
-        'error'   => 'Det gick inte att ta bort värdeminskningsklassen. Vänligen försök igen.',
-        'success' => 'Värdeminskningsklassen har tagits bort.'
+        'confirm'   => 'Are you sure you wish to delete this depreciation class?',
+        'error'   => 'There was an issue deleting the depreciation class. Please try again.',
+        'success' => 'The depreciation class was deleted successfully.'
     )
 
 );

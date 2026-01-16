@@ -13,9 +13,12 @@ return array(
     |
     */
 
-    "password" => "密碼至少需要六個字符，並且與確認欄位相符",
-    "user"     => "使用者名稱或電子郵件地址不正確",
-    "token"    => '這個密碼重置安全權杖無效或過期，或與提供的用戶名稱不相符',
-    'sent'	   => '如果該電子郵件已存在我們的系統中，一封含有恢復密碼的郵件將被傳送',
+    "password" => "Passwords must be six characters and match the confirmation.",
+
+    "user"     => "Username or email address is incorrect",
+
+    "token"    => "This password reset token is invalid.",
+
+    "sent" => "If a matching email address was found, a password reminder has been sent!",
 
 );

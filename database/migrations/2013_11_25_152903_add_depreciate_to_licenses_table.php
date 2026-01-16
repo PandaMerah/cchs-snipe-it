@@ -27,5 +27,9 @@ class AddDepreciateToLicensesTable extends Migration
         Schema::table('licenses', function ($table) {
             $table->dropColumn('depreciate');
         });
+
+
+
     }
+
 }

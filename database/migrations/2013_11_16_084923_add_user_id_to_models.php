@@ -25,4 +25,5 @@ class AddUserIdToModels extends Migration
     {
         //
     }
+
 }

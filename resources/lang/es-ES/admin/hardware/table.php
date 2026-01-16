@@ -1,32 +1,24 @@
 <?php
 
-return [
+return array(
 
-    'asset_tag'   	=> 'Placa del activo',
+    'asset_tag'   	=> 'Etiqueta',
     'asset_model'       => 'Modelo',
-    'assigned_to'   => 'Asignado a',
-    'book_value'  	=> 'Valor Actual',
+    'book_value'  	=> 'Valor',
     'change' 		=> 'Operación',
     'checkout_date' => 'Fecha de asignación',
-    'checkoutto' 	=> 'Asignado a',
-    'components_cost' => 'Coste total de componentes',
-    'current_value' => 'Valor actual',
+    'checkoutto' 	=> 'Asignado',
     'diff' 			=> 'Diferencia',
     'dl_csv' 		=> 'Descargar CSV',
-    'eol' 			=> 'Fin de soporte (EOL)',
+    'eol' 			=> 'EOL',
     'id'      		=> 'ID',
-    'last_checkin_date' => 'Última fecha de ingreso',
-    'location' 		=> 'Ubicación',
+    'location' 		=> 'Localización',
     'purchase_cost'	=> 'Costo',
     'purchase_date'	=> 'Comprado',
-    'serial'   		=> 'Número de serie',
+    'serial'   		=> 'N. Serie',
     'status'   		=> 'Estado',
-    'title'      	=> 'Activo ',
-    'image'		    => 'Imagen de dispositivo',
-    'days_without_acceptance' => 'Días sin aceptación',
-    'monthly_depreciation' => 'Depreciación mensual',
-    'requesting_user' => 'Usuario solicitante',
-    'requested_date' => 'Fecha solicitada',
-    'changed'       => 'Cambios',
-    'icon' => 'Ícono',
-];
+    'title'      	=> 'Equipo ',
+    'image'		=> 'Imagen de dispositivo',
+    'days_without_acceptance' => 'Días Sin Aceptación'
+
+);

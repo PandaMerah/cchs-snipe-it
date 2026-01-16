@@ -1,62 +1,35 @@
 <?php
-
 namespace App\Models;
 
-use App\Http\Traits\TwoColumnUniqueUndeletedTrait;
-use App\Models\Traits\Searchable;
-use App\Presenters\Presentable;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Gate;
 use Watson\Validating\ValidatingTrait;
-use App\Helpers\Helper;
-use Illuminate\Support\Str;
 
-/**
- * Model for Categories. Categories are a higher-level group
- * than Asset Models, and handle things like whether or not
- * to require acceptance from the user, whether or not to
- * send a EULA to the user, etc.
- *
- * @version v1.0
- */
-class Category extends SnipeModel
+class Category extends Model
 {
-    use HasFactory;
 
-    protected $presenter = \App\Presenters\CategoryPresenter::class;
-    use Presentable;
     use SoftDeletes;
-
+    protected $dates = ['deleted_at'];
     protected $table = 'categories';
-    protected $hidden = ['created_by', 'deleted_at'];
-
-    protected $casts = [
-        'alert_on_response' => 'boolean',
-        'created_by'      => 'integer',
-    ];
 
     /**
-     * Category validation rules
-     */
-    public $rules = [
-        'created_by' => 'numeric|nullable',
-        'name'   => 'required|min:1|max:255|two_column_unique_undeleted:category_type',
-        'require_acceptance'   => 'boolean',
-        'use_default_eula'   => 'boolean',
-        'category_type'   => 'required|in:asset,accessory,consumable,component,license',
-    ];
+    * Category validation rules
+    */
+    public $rules = array(
+        'user_id' => 'numeric',
+        'name'   => 'required|min:3|max:255|unique:categories,name,NULL,deleted_at',
+        'category_type'   => 'required',
+    );
 
     /**
-     * Whether the model should inject it's identifier to the unique
-     * validation rules before attempting validation. If this property
-     * is not set in the model it will default to true.
-     *
-     * @var bool
-     */
+    * Whether the model should inject it's identifier to the unique
+    * validation rules before attempting validation. If this property
+    * is not set in the model it will default to true.
+    *
+    * @var boolean
+    */
     protected $injectUniqueIdentifier = true;
     use ValidatingTrait;
-    use TwoColumnUniqueUndeletedTrait;
 
 
     /**
@@ -64,277 +37,99 @@ class Category extends SnipeModel
      *
      * @var array
      */
-    protected $fillable = [
-        'category_type',
-        'checkin_email',
-        'eula_text',
-        'name',
-        'require_acceptance',
-        'alert_on_response',
-        'use_default_eula',
-        'created_by',
-        'tag_color',
-        'notes',
-    ];
+    protected $fillable = ['name','category_type'];
 
-    use Searchable;
 
-    /**
-     * The attributes that should be included when searching the model.
-     *
-     * @var array
-     */
-    protected $searchableAttributes = ['name', 'category_type', 'notes'];
-
-    /**
-     * The relations and their attributes that should be included when searching the model.
-     *
-     * @var array
-     */
-    protected $searchableRelations = [];
-
-    /**
-     * Checks if category can be deleted
-     *
-     * @author [Dan Meltzer] [<dmeltzer.devel@gmail.com>]
-     * @since  [v5.0]
-     * @return bool
-     */
-    public function isDeletable()
+    public function has_models()
     {
-
-        // We have to check for models as well if the category type is asset
-        if ($this->category_type == 'asset') {
-            return Gate::allows('delete', $this)
-                && ($this->itemCount() == 0)
-                && ($this->models_count == 0)
-                && ($this->deleted_at == '');
-        }
-
-        return Gate::allows('delete', $this)
-                && ($this->itemCount() == 0)
-                && ($this->deleted_at == '');
+        return $this->hasMany('\App\Models\AssetModel', 'category_id')->count();
     }
 
-    /**
-     * Establishes the category -> accessories relationship
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v2.0]
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
-     */
     public function accessories()
     {
-        return $this->hasMany(\App\Models\Accessory::class);
+        return $this->hasMany('\App\Models\Accessory');
     }
 
-    /**
-     * Establishes the category -> licenses relationship
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v4.3]
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
-     */
-    public function licenses()
-    {
-        return $this->hasMany(\App\Models\License::class);
-    }
-
-    /**
-     * Establishes the category -> consumables relationship
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v3.0]
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
-     */
     public function consumables()
     {
-        return $this->hasMany(\App\Models\Consumable::class);
+        return $this->hasMany('\App\Models\Consumable');
     }
 
-    /**
-     * Establishes the category -> consumables relationship
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v3.0]
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
-     */
     public function components()
     {
-        return $this->hasMany(\App\Models\Component::class);
+        return $this->hasMany('\App\Models\Component');
     }
 
-    /**
-     * Get the number of items in the category. This should NEVER be used in
-     * a collection of categories, as you'll end up with an n+1 query problem.
-     *
-     * It should only be used in a single category context.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v2.0]
-     * @return int
-     */
     public function itemCount()
     {
-
-        if (isset($this->{Str::plural($this->category_type).'_count'})) {
-            return $this->{Str::plural($this->category_type).'_count'};
-        }
-
         switch ($this->category_type) {
-        case 'asset':
-            return $this->assets->count();
-        case 'accessory':
-            return $this->accessories->count();
-        case 'component':
-            return $this->components->count();
-        case 'consumable':
-            return $this->consumables->count();
-        case 'license':
-            return $this->licenses->count();
-        default:
-            return 0;
+            case 'asset':
+                return $this->assets->count();
+            case 'accessory':
+                return $this->accessories->count();
+            case 'component':
+                return $this->components->count();
+            case 'consumable':
+                return $this->consumables->count();
         }
-
+        return '0';
     }
 
-    /**
-     * Establishes the category -> assets relationship
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v2.0]
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
-     */
     public function assets()
     {
-        return $this->hasManyThrough(Asset::class, \App\Models\AssetModel::class, 'category_id', 'model_id');
+        return $this->hasManyThrough('\App\Models\Asset', '\App\Models\AssetModel', 'category_id', 'model_id');
     }
 
-    /**
-     * Establishes the category -> assets relationship but also takes into consideration
-     * the setting to show archived in lists.
-     *
-     * We could have complicated the assets() method above, but keeping this separate
-     * should give us more flexibility if we need to return actually archived assets
-     * by their category.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v6.1.0]
-     * @see    \App\Models\Asset::scopeAssetsForShow()
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
-     */
-    public function showableAssets()
-    {
-        return $this->hasManyThrough(Asset::class, \App\Models\AssetModel::class, 'category_id', 'model_id')->AssetsForShow();
-    }
-
-    /**
-     * Establishes the category -> models relationship
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v2.0]
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
-     */
     public function models()
     {
-        return $this->hasMany(\App\Models\AssetModel::class, 'category_id');
+        return $this->hasMany('\App\Models\AssetModel', 'category_id');
     }
 
-    public function adminuser()
-    {
-        return $this->belongsTo(\App\Models\User::class, 'created_by');
-    }
-
-    /**
-     * Checks for a category-specific EULA, and if that doesn't exist,
-     * checks for a settings level EULA
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since  [v2.0]
-     * @return string | null
-     */
     public function getEula()
     {
 
+        $Parsedown = new \Parsedown();
+
         if ($this->eula_text) {
-            return Helper::parseEscapedMarkedown($this->eula_text);
-        } elseif ((Setting::getSettings()->default_eula_text) && ($this->use_default_eula == '1')) {
-            return Helper::parseEscapedMarkedown(Setting::getSettings()->default_eula_text);
+            return $Parsedown->text(e($this->eula_text));
+        } elseif ((Setting::getSettings()->default_eula_text) && ($this->use_default_eula=='1')) {
+            return $Parsedown->text(e(Setting::getSettings()->default_eula_text));
         } else {
             return null;
         }
+
     }
 
     /**
-     * -----------------------------------------------
-     * BEGIN MUTATORS
-     * -----------------------------------------------
-     **/
-
-    /**
-     * This sets the checkin_value to a boolean 0 or 1. This accounts for forms or API calls that
-     * explicitly pass the checkin_email field but it has a null or empty value.
+     * scopeRequiresAcceptance
      *
-     * This will also correctly parse a 1/0 if "true"/"false" is passed.
+     * @param $query
      *
-     * @param  $value
-     * @return void
-     */
-    public function setCheckinEmailAttribute($value)
-    {
-        $this->attributes['checkin_email'] = (int) filter_var($value, FILTER_VALIDATE_BOOLEAN);
-    }
-
-    /**
-     * -----------------------------------------------
-     * BEGIN QUERY SCOPES
-     * -----------------------------------------------
-     **/
-
-    /**
-     * Query builder scope to search on text filters for complex Bootstrap Tables API
-     *
-     * @param \Illuminate\Database\Query\Builder $query  Query builder instance
-     * @param text                               $filter JSON array of search keys and terms
-     *
-     * @return \Illuminate\Database\Query\Builder          Modified query builder
-     */
-    public function scopeByFilter($query, $filter)
-    {
-        return $query->where(
-            function ($query) use ($filter) {
-                foreach ($filter as $fieldname => $search_val) {
-
-                    if ($fieldname == 'name') {
-                        $query->where('categories.name', 'LIKE', '%' . $search_val . '%');
-                    }
-
-                    if ($fieldname == 'category_type') {
-                        $query->where('categories.category_type', 'LIKE', '%' . $search_val . '%');
-                    }
-
-                }
-
-
-            }
-        );
-    }
-
-    /**
-     * Query builder scope for whether or not the category requires acceptance
-     *
-     * @author Vincent Sposato <vincent.sposato@gmail.com>
-     *
-     * @param  \Illuminate\Database\Query\Builder $query Query builder instance
-     * @return \Illuminate\Database\Query\Builder          Modified query builder
+     * @return mixed
+     * @author  Vincent Sposato <vincent.sposato@gmail.com>
+     * @version v1.0
      */
     public function scopeRequiresAcceptance($query)
     {
+
         return $query->where('require_acceptance', '=', true);
     }
 
-    public function scopeOrderByCreatedBy($query, $order)
+    /**
+    * Query builder scope to search on text
+    *
+    * @param  Illuminate\Database\Query\Builder  $query  Query builder instance
+    * @param  text                              $search      Search term
+    *
+    * @return Illuminate\Database\Query\Builder          Modified query builder
+    */
+    public function scopeTextSearch($query, $search)
     {
-        return $query->leftJoin('users as admin_sort', 'categories.created_by', '=', 'admin_sort.id')->select('categories.*')->orderBy('admin_sort.first_name', $order)->orderBy('admin_sort.last_name', $order);
+
+        return $query->where(function ($query) use ($search) {
+        
+            $query->where('name', 'LIKE', '%'.$search.'%')
+            ->orWhere('category_type', 'LIKE', '%'.$search.'%');
+        });
     }
 }

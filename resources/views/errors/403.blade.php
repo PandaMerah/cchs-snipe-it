@@ -13,14 +13,14 @@
 
 
 <div class="row">
-  <div class="col-md-8 col-md-offset-2">
+  <div class="col-md-12">
 
-    <div style="padding-top: 200px">
-      <img src="{{ config('app.url') }}/img/sad-panda.png" style="width: 200px; height: 200px;" class="pull-left">
+    <div class="error-page" style="padding-top: 200px">
+      <img src="{{ config('app.url') }}/assets/img/sad-panda.png" style="width: 200px; height: 200px;" class="pull-left">
             <div class="error-content">
-              <h2><x-icon type="warning" class="text-yellow" /> 403 Forbidden.</h2>
+              <h3><i class="fa fa-warning text-yellow"></i> 403 Forbidden.</h3>
               <p>
-                {!! trans('general.sad_panda', ['link' => config('app.url')]) !!}
+                Sad panda. You are not authorized to do the thing. Maybe <a href="{{ route('home') }}">return to the dashboard</a>, or contact your administrator.
               </p>
 
     </div>

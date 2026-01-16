@@ -1,16 +1,17 @@
 <?php
 
 return array(
-    'component_name'                  => 'Nama Komponen',
-    'checkin'                             => 'Komponen Masuk',
-    'checkout'                             => 'Komponen Keluar',
-    'cost'				=> 'Harga Pembelian',
-    'create'                             => 'Buat Komponen',
-    'edit'                             => 'Ubah Komponen',
-    'date'					=> 'Tanggal Pemebelian',
-    'order'					=> 'Nomor Permintaan',
-    'remaining' 			             => 'Sisa',
+    'about_components_title' 			=> 'About Components',
+    'about_components_text'  			=> 'Components are items that are part of an asset, for example HDD, RAM, etc.',
+    'component_name'                  => 'Component Name',
+    'checkin'                             => 'Checkin Component',
+    'checkout'                             => 'Checkout Component',
+    'cost'				=> 'Purchase Cost',
+    'create'                             => 'Create Component',
+    'edit'                             => 'Edit Component',
+    'date'					=> 'Purchase Date',
+    'order'					=> 'Order Number',
+    'remaining' 			             => 'Remaining',
     'total' 			                 => 'Total',
-    'update'                            => 'Perbaharui Komponen',
-    'checkin_limit'            => 'Amount checked in must be equal to or less than :assigned_qty'
+    'update'                            => 'Update Component',
 );

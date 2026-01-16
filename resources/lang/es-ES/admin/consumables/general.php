@@ -1,12 +1,14 @@
 <?php
 
 return array(
-    'checkout'                          => 'Asignar consumible a usuario',
-    'consumable_name'                   => 'Nombre del consumible',
-    'create'                            => 'Crear consumible',
-    'item_no'                           => 'Artículo No.',
-    'remaining' 			            => 'Restante',
-    'total' 			                => 'Total',
-    'update'                            => 'Actualizar consumible',
-    'inventory_warning'                 => 'El inventario de este consumible está por debajo de la cantidad mínima de :min_count',
+    'about_consumables_title' 			=> 'Acerca de los consumibles',
+    'about_consumables_text'  			=> 'Consumibles son cualquier cosa comprada que puede ser usada a lo largo del tiempo. Por ejemplo, tinta para impresora o papel para copiadora.',
+    'consumable_name'                  => 'Nombre del Consumible',
+    'cost'				=> 'Precio de compra',
+    'create'                             => 'Crear Consumible',
+    'date'					=> 'Fecha de compra',
+    'order'					=> 'Orden de compra',
+    'remaining' 			             => 'Restante',
+    'total' 			                 => 'Total',
+    'update'                            => 'Actualizar Consumible',
 );

@@ -1,113 +1,433 @@
 <?php
 /**
 * Macro helpers
+*
 */
 
+
 /**
- * Country macro
- * Generates the dropdown menu of countries for the profile form
- */
-Form::macro('countries', function ($name = 'country', $selected = null, $class = null, $id = null) {
+* Locale macro
+* Generates the dropdown menu of available languages
+*/
+Form::macro('locales', function ($name = "locale", $selected = null, $class = null, $id = null) {
 
-    $idclause = (!is_null($id)) ? $id : '';
+    $locales = array(
+      ''=> " ",
+      'en'=> "English, US",
+      'en-GB'=> "English, UK",
+      'ar'=> "Arabic",
+      'bg'=> "Bulgarian",
+      'zh-CN'=> "Chinese Simplified",
+      'zh-TW'=> "Chinese Traditional",
+      'hr'=> "Croatian",
+      'cs'=> "Czech",
+      'da'=> "Danish",
+      'nl'=> "Dutch",
+      'en-ID'=> "English, Indonesia",
+      'fi'=> "Finnish",
+      'fr'=> "French",
+      'de'=> "German",
+      'el'=> "Greek",
+      'he'=> "Hebrew",
+      'hu'=> "Hungarian",
+      'it'=> "Italian",
+      'ja'=> "Japanese",
+      'ko'=> "Korean",
+      'lt'=> "Lithuanian",
+      'ms'=> "Malay",
+      'no'=> "Norwegian",
+      'pl'=> "Polish",
+      'pt-PT'=> "Portuguese",
+      'pt-BR'=> "Portuguese, Brazilian",
+      'ro'=> "Romanian",
+      'ru'=> "Russian",
+      'es-ES'=> "Spanish",
+      'es-CO'=> "Spanish, Colombia",
+      'sv-SE'=> "Swedish",
+      'th'=> "Thai",
+      'tr'=> "Turkish",
+      'vi'=> "Vietnamese",
+    );
 
-    // Pull the autoglossonym array from the localizations translation file
-    $countries_array = trans('localizations.countries');
-
-    $select = '<select name="'.$name.'" class="'.$class.'" style="width:100%" '.$idclause.' aria-label="'.$name.'" data-placeholder="'.trans('localizations.select_country').'" data-allow-clear="true" data-tags="true">';
-    $select .= '<option value=""  role="option">'.trans('localizations.select_country').'</option>';
-
-    foreach ($countries_array as $abbr => $country) {
-
-        // We have to handle it this way to handle deprecation warnings since you can't strtoupper on null
-        if ($abbr!='') {
-            $abbr = strtoupper($abbr);
-        }
-
-        // Loop through the countries configured in the localization file
-        $select .= '<option value="' . $abbr . '" role="option" ' . (($selected == $abbr) ? ' selected="selected" aria-selected="true"' : ' aria-selected="false"') . '>' . $country . '</option> ';
-
+    $idclause='';
+    if($id) {
+      $idclause=" id='$id'";
     }
+    $select = '<select name="'.$name.'" class="'.$class.'" style="min-width:350px"'.$idclause.'>';
 
-    // If the country value doesn't exist in the array, add it as a new option and select it so we don't drop that data
-    if (!array_key_exists($selected, $countries_array)) {
-        $select .= '<option value="' . e($selected) . '" selected="selected" role="option" aria-selected="true">' . e($selected) .' *</option> ';
+    foreach ($locales as $abbr => $locale) {
+        $select .= '<option value="'.$abbr.'"'.($selected == $abbr ? ' selected="selected"' : '').'>'.$locale.'</option> ';
     }
 
     $select .= '</select>';
 
     return $select;
+
 });
 
+
 /**
- * Barcode macro
- * Generates the dropdown menu of available 1D barcodes
- */
-Form::macro('alt_barcode_types', function ($name = 'alt_barcode', $selected = null, $class = null) {
-    $barcode_types = [
+* Country macro
+* Generates the dropdown menu of countries for the profile form
+*/
+Form::macro('countries', function ($name = "country", $selected = null, $class = null, $id = null) {
+
+    $countries = array(
+    ''=>"Select a Country",
+    'AC'=>'Ascension Island',
+    'AD'=>'Andorra',
+    'AE'=>'United Arab Emirates',
+    'AF'=>'Afghanistan',
+    'AG'=>'Antigua And Barbuda',
+    'AI'=>'Anguilla',
+    'AL'=>'Albania',
+    'AM'=>'Armenia',
+    'AN'=>'Netherlands Antilles',
+    'AO'=>'Angola',
+    'AQ'=>'Antarctica',
+    'AR'=>'Argentina',
+    'AS'=>'American Samoa',
+    'AT'=>'Austria',
+    'AU'=>'Australia',
+    'AW'=>'Aruba',
+    'AX'=>'Ãƒâ€¦land',
+    'AZ'=>'Azerbaijan',
+    'BA'=>'Bosnia And Herzegovina',
+    'BB'=>'Barbados',
+    'BE'=>'Belgium',
+    'BD'=>'Bangladesh',
+    'BF'=>'Burkina Faso',
+    'BG'=>'Bulgaria',
+    'BH'=>'Bahrain',
+    'BI'=>'Burundi',
+    'BJ'=>'Benin',
+    'BM'=>'Bermuda',
+    'BN'=>'Brunei Darussalam',
+    'BO'=>'Bolivia',
+    'BR'=>'Brazil',
+    'BS'=>'Bahamas',
+    'BT'=>'Bhutan',
+    'BV'=>'Bouvet Island',
+    'BW'=>'Botswana',
+    'BY'=>'Belarus',
+    'BZ'=>'Belize',
+    'CA'=>'Canada',
+    'CC'=>'Cocos (Keeling) Islands',
+    'CD'=>'Congo (Democratic Republic)',
+    'CF'=>'Central African Republic',
+    'CG'=>'Congo (Republic)',
+    'CH'=>'Switzerland',
+    'CI'=>'Côte d\'Ivoire',
+    'CK'=>'Cook Islands',
+    'CL'=>'Chile',
+    'CM'=>'Cameroon',
+    'CN'=>'People\'s Republic of China',
+    'CO'=>'Colombia',
+    'CR'=>'Costa Rica',
+    'CU'=>'Cuba',
+    'CV'=>'Cape Verde',
+    'CX'=>'Christmas Island',
+    'CY'=>'Cyprus',
+    'CZ'=>'Czech Republic',
+    'DE'=>'Germany',
+    'DJ'=>'Djibouti',
+    'DK'=>'Denmark',
+    'DM'=>'Dominica',
+    'DO'=>'Dominican Republic',
+    'DZ'=>'Algeria',
+    'EC'=>'Ecuador',
+    'EE'=>'Estonia',
+    'EG'=>'Egypt',
+    'ER'=>'Eritrea',
+    'ES'=>'Spain',
+    'ET'=>'Ethiopia',
+    'EU'=>'European Union',
+    'FI'=>'Finland',
+    'FJ'=>'Fiji',
+    'FK'=>'Falkland Islands (Malvinas)',
+    'FM'=>'Micronesia, Federated States Of',
+    'FO'=>'Faroe Islands',
+    'FR'=>'France',
+    'GA'=>'Gabon',
+    'GD'=>'Grenada',
+    'GE'=>'Georgia',
+    'GF'=>'French Guiana',
+    'GG'=>'Guernsey',
+    'GH'=>'Ghana',
+    'GI'=>'Gibraltar',
+    'GL'=>'Greenland',
+    'GM'=>'Gambia',
+    'GN'=>'Guinea',
+    'GP'=>'Guadeloupe',
+    'GQ'=>'Equatorial Guinea',
+    'GR'=>'Greece',
+    'GS'=>'South Georgia And The South Sandwich Islands',
+    'GT'=>'Guatemala',
+    'GU'=>'Guam',
+    'GW'=>'Guinea-Bissau',
+    'GY'=>'Guyana',
+    'HK'=>'Hong Kong',
+    'HM'=>'Heard And Mc Donald Islands',
+    'HN'=>'Honduras',
+    'HR'=>'Croatia (local name: Hrvatska)',
+    'HT'=>'Haiti',
+    'HU'=>'Hungary',
+    'ID'=>'Indonesia',
+    'IE'=>'Ireland',
+    'IL'=>'Israel',
+    'IM'=>'Isle of Man',
+    'IN'=>'India',
+    'IO'=>'British Indian Ocean Territory',
+    'IQ'=>'Iraq',
+    'IR'=>'Iran, Islamic Republic Of',
+    'IS'=>'Iceland',
+    'IT'=>'Italy',
+    'JE'=>'Jersey',
+    'JM'=>'Jamaica',
+    'JO'=>'Jordan',
+    'JP'=>'Japan',
+    'KE'=>'Kenya',
+    'KG'=>'Kyrgyzstan',
+    'KH'=>'Cambodia',
+    'KI'=>'Kiribati',
+    'KM'=>'Comoros',
+    'KN'=>'Saint Kitts And Nevis',
+    'KR'=>'Korea, Republic Of',
+    'KW'=>'Kuwait',
+    'KY'=>'Cayman Islands',
+    'KZ'=>'Kazakhstan',
+    'LA'=>'Lao People\'s Democratic Republic',
+    'LB'=>'Lebanon',
+    'LC'=>'Saint Lucia',
+    'LI'=>'Liechtenstein',
+    'LK'=>'Sri Lanka',
+    'LR'=>'Liberia',
+    'LS'=>'Lesotho',
+    'LT'=>'Lithuania',
+    'LU'=>'Luxembourg',
+    'LV'=>'Latvia',
+    'LY'=>'Libyan Arab Jamahiriya',
+    'MA'=>'Morocco',
+    'MC'=>'Monaco',
+    'MD'=>'Moldova, Republic Of',
+    'ME'=>'Montenegro',
+    'MG'=>'Madagascar',
+    'MH'=>'Marshall Islands',
+    'MK'=>'Macedonia, The Former Yugoslav Republic Of',
+    'ML'=>'Mali',
+    'MM'=>'Myanmar',
+    'MN'=>'Mongolia',
+    'MO'=>'Macau',
+    'MP'=>'Northern Mariana Islands',
+    'MQ'=>'Martinique',
+    'MR'=>'Mauritania',
+    'MS'=>'Montserrat',
+    'MT'=>'Malta',
+    'MU'=>'Mauritius',
+    'MV'=>'Maldives',
+    'MW'=>'Malawi',
+    'MX'=>'Mexico',
+    'MY'=>'Malaysia',
+    'MZ'=>'Mozambique',
+    'NA'=>'Namibia',
+    'NC'=>'New Caledonia',
+    'NE'=>'Niger',
+    'NF'=>'Norfolk Island',
+    'NG'=>'Nigeria',
+    'NI'=>'Nicaragua',
+    'NL'=>'Netherlands',
+    'NO'=>'Norway',
+    'NP'=>'Nepal',
+    'NR'=>'Nauru',
+    'NU'=>'Niue',
+    'NZ'=>'New Zealand',
+    'OM'=>'Oman',
+    'PA'=>'Panama',
+    'PE'=>'Peru',
+    'PF'=>'French Polynesia',
+    'PG'=>'Papua New Guinea',
+    'PH'=>'Philippines, Republic of the',
+    'PK'=>'Pakistan',
+    'PL'=>'Poland',
+    'PM'=>'St. Pierre And Miquelon',
+    'PN'=>'Pitcairn',
+    'PR'=>'Puerto Rico',
+    'PS'=>'Palestine',
+    'PT'=>'Portugal',
+    'PW'=>'Palau',
+    'PY'=>'Paraguay',
+    'QA'=>'Qatar',
+    'RE'=>'Reunion',
+    'RO'=>'Romania',
+    'RS'=>'Serbia',
+    'RU'=>'Russian Federation',
+    'RW'=>'Rwanda',
+    'SA'=>'Saudi Arabia',
+    'UK'=>'Scotland',
+    'SB'=>'Solomon Islands',
+    'SC'=>'Seychelles',
+    'SD'=>'Sudan',
+    'SE'=>'Sweden',
+    'SG'=>'Singapore',
+    'SH'=>'St. Helena',
+    'SI'=>'Slovenia',
+    'SJ'=>'Svalbard And Jan Mayen Islands',
+    'SK'=>'Slovakia (Slovak Republic)',
+    'SL'=>'Sierra Leone',
+    'SM'=>'San Marino',
+    'SN'=>'Senegal',
+    'SO'=>'Somalia',
+    'SR'=>'Suriname',
+    'ST'=>'Sao Tome And Principe',
+    'SU'=>'Soviet Union',
+    'SV'=>'El Salvador',
+    'SY'=>'Syrian Arab Republic',
+    'SZ'=>'Swaziland',
+    'TC'=>'Turks And Caicos Islands',
+    'TD'=>'Chad',
+    'TF'=>'French Southern Territories',
+    'TG'=>'Togo',
+    'TH'=>'Thailand',
+    'TJ'=>'Tajikistan',
+    'TK'=>'Tokelau',
+    'TI'=>'East Timor',
+    'TM'=>'Turkmenistan',
+    'TN'=>'Tunisia',
+    'TO'=>'Tonga',
+    'TP'=>'East Timor (old code)',
+    'TR'=>'Turkey',
+    'TT'=>'Trinidad And Tobago',
+    'TV'=>'Tuvalu',
+    'TW'=>'Taiwan',
+    'TZ'=>'Tanzania, United Republic Of',
+    'UA'=>'Ukraine',
+    'UG'=>'Uganda',
+    'UK'=>'United Kingdom',
+    'US'=>'United States',
+    'UM'=>'United States Minor Outlying Islands',
+    'UY'=>'Uruguay',
+    'UZ'=>'Uzbekistan',
+    'VA'=>'Vatican City State (Holy See)',
+    'VC'=>'Saint Vincent And The Grenadines',
+    'VE'=>'Venezuela',
+    'VG'=>'Virgin Islands (British)',
+    'VI'=>'Virgin Islands (U.S.)',
+    'VN'=>'Viet Nam',
+    'VU'=>'Vanuatu',
+    'WF'=>'Wallis And Futuna Islands',
+    'WS'=>'Samoa',
+    'YE'=>'Yemen',
+    'YT'=>'Mayotte',
+    'ZA'=>'South Africa',
+    'ZM'=>'Zambia',
+    'ZW'=>'Zimbabwe'
+    );
+
+    $idclause='';
+    if($id) {
+      $idclause=" id='$id'";
+    }
+    $select = '<select name="'.$name.'" class="'.$class.'" style="min-width:350px"'.$idclause.'>';
+
+    foreach ($countries as $abbr => $country) {
+        $select .= '<option value="'.strtoupper($abbr).'"'.(strtoupper($selected)== strtoupper($abbr) ? ' selected="selected"' : '').'>'.$country.'</option> ';
+    }
+
+    $select .= '</select>';
+
+    return $select;
+
+});
+
+
+/**
+* Barcode macro
+* Generates the dropdown menu of available barcodes
+*/
+Form::macro('barcode_types', function ($name = "barcode_type", $selected = null, $class = null) {
+
+    $barcode_types = array(
+    'QRCODE'=>"QR Code",
+    'PDF417'=>'PDF417',
+    'DATAMATRIX'=>'DATAMATRIX',
+    'C128'=>'Code 128'
+    );
+
+    $select = '<select name="'.$name.'" class="'.$class.'">';
+
+    foreach ($barcode_types as $code => $codename) {
+        $select .= '<option value="'.$code.'"'.($selected == $code ? ' selected="selected"' : '').'>'.$codename.'</option> ';
+    }
+
+    $select .= '</select>';
+
+    return $select;
+
+});
+
+
+/**
+* Currency macro
+* Generates the dropdown menu of world currencies
+*/
+Form::macro('currencies', function ($name = "currency", $selected = null, $class = null) {
+
+      $currencies =  array(
+        'USD' => array('name'=>'US/Canadian/etc Dollar', 'symbol'=>'$','symbol_html'=>'$'),
+        'GBP' => array('name'=>'GBP - British Pounds', 'symbol'=>'£','symbol_html'=>'&pound;'),
+        'EUR' => array('name'=>'EUR - Euros', 'symbol'=>'€','symbol_html'=>'&euro;'),
+        'BGN' => array('name'=>'BGN - Bulgarian lev', 'symbol'=>'лв.','symbol_html'=>'лв.'),
+        'BRL' => array('name'=>'BRL - Brazilian Real', 'symbol'=>'R$','symbol_html'=>'R$'),
+        'CZK' => array('name'=>'CZK - Czech koruny', 'symbol'=>'Kč','symbol_html'=>'CZK'),
+        'DKK' => array('name'=>'DKK - Danish Kroner', 'symbol'=>'kr','symbol_html'=>'kr'),
+        'HUF' => array('name'=>'HUF - Hungarian Forints', 'symbol'=>'Ft','symbol_html'=>'Ft'),
+        'ILS' => array('name'=>'ILS - Israeli Shekels', 'symbol'=>'₪','symbol_html'=>'&#8362;'),
+        'JPY' => array('name'=>'JPY - Japanese Yen', 'symbol'=>'¥','symbol_html'=>'&#165;'),
+        'MYR' => array('name'=>'MYR - Malaysian Ringgits', 'symbol'=>'RM','symbol_html'=>'RM'),
+        'NOK' => array('name'=>'NOK - Norwegian Kroner', 'symbol'=>'kr','symbol_html'=>'kr'),
+        'PHP' => array('name'=>'PHP - Philippine Pesos', 'symbol'=>'Php','symbol_html'=>'Php'),
+        'PLN' => array('name'=>'PLN - Polish zloty', 'symbol'=>'zł','symbol_html'=>'PLN'),
+        'INR' => array('name'=>'INR - Indian Rupee', 'symbol'=>'Rs','symbol_html'=>'&#8360;'),
+        'RUB' => array('name'=>'RUB - Russian Rubles', 'symbol'=>'₽','symbol_html'=>'&#8381;'),
+        'SEK' => array('name'=>'SEK - Swedish Kronor', 'symbol'=>'kr','symbol_html'=>'kr'),
+        'CHF' => array('name'=>'CHF - Swiss Francs', 'symbol'=>'CHF','symbol_html'=>'CHF'),
+        'THB' => array('name'=>'THB - Thai Baht', 'symbol'=>'฿','symbol_html'=>' &#3647;'),
+        'TRY' => array('name'=>'TRY - Turkish Liras', 'symbol'=>'TL','symbol_html'=>' &#3647;'),
+        'UAH' => array('name'=>'UAH - Ukrainian Hryvnias', 'symbol'=>'₴','symbol_html'=>'&#8372;'),
+        'ZAR' => array('name'=>'ZAR - South African Rand', 'symbol'=>'R','symbol_html'=>'R'),
+        'AED' => array('name'=>'AED - United Arab Emirates Dirham', 'symbol'=>'AED','symbol_html'=>'AED'),
+        'CNY' => array('name'=>'CNY - Chinese Yuan', 'symbol'=>'¥','symbol_html'=>'&#165;'),
+  	);
+
+    $select = '<select name="'.$name.'" class="'.$class.'">';
+    foreach ($currencies as $currency) {
+        $select .= '<option value="'.$currency['symbol'].'"'.($selected == $currency['symbol'] ? ' selected="selected"' : '').'>'.$currency['name'].' ('.$currency['symbol'].')</option> ';
+    }
+
+    $select .= '</select>';
+
+    return $select;
+
+});
+
+
+
+Form::macro('barcode_types', function ($name = "barcode_type", $selected = null, $class = null) {
+
+    $barcode_types = array(
         'C128',
-        'C39',
-        'PDF417',
-        'EAN5',
-        'EAN13',
-        'UPCA',
-        'UPCE',
-
-    ];
-
-    $select = '<select name="'.$name.'" class="'.$class.'" aria-label="'.$name.'">';
-    foreach ($barcode_types as $barcode_type) {
-        $select .= '<option value="'.$barcode_type.'"'.($selected == $barcode_type ? ' selected="selected" role="option" aria-selected="true"' : ' aria-selected="false"').'>'.$barcode_type.'</option> ';
-    }
-
-    $select .= '</select>';
-
-    return $select;
-});
-
-/**
- * Barcode macro
- * Generates the dropdown menu of available 2D barcodes
- */
-Form::macro('barcode_types', function ($name = 'barcode_type', $selected = null, $class = null) {
-    $barcode_types = [
-        'QRCODE',
         'DATAMATRIX',
+        'PDF417',
+        'QRCODE',
+    );
 
-    ];
-
-    $select = '<select name="'.$name.'" class="'.$class.'" aria-label="'.$name.'">';
+    $select = '<select name="'.$name.'" class="'.$class.'">';
     foreach ($barcode_types as $barcode_type) {
-        $select .= '<option value="'.$barcode_type.'"'.($selected == $barcode_type ? ' selected="selected" role="option" aria-selected="true"' : ' aria-selected="false"').'>'.$barcode_type.'</option> ';
+        $select .= '<option value="'.$barcode_type.'"'.($selected == $barcode_type ? ' selected="selected"' : '').'>'.$barcode_type.'</option> ';
     }
 
     $select .= '</select>';
 
     return $select;
-});
 
-Form::macro('username_format', function ($name = 'username_format', $selected = null, $class = null) {
-    $formats = [
-        'firstname.lastname' => trans('admin/settings/general.username_formats.firstname_lastname_format'),
-        'firstname' => trans('admin/settings/general.username_formats.first_name_format'),
-        'lastname' => trans('admin/settings/general.username_formats.last_name_format'),
-        'filastname' => trans('admin/settings/general.username_formats.filastname_format'),
-        'lastnamefirstinitial' => trans('admin/settings/general.username_formats.lastnamefirstinitial_format'),
-        'firstname_lastname' => trans('admin/settings/general.username_formats.firstname_lastname_underscore_format'),
-        'firstinitial.lastname' => trans('admin/settings/general.username_formats.firstinitial_lastname'),
-        'lastname_firstinitial' => trans('admin/settings/general.username_formats.lastname_firstinitial'),
-        'lastname.firstinitial' => trans('admin/settings/general.username_formats.lastname_dot_firstinitial_format'),
-        'firstnamelastname' => trans('admin/settings/general.username_formats.firstnamelastname'),
-        'firstnamelastinitial' => trans('admin/settings/general.username_formats.firstnamelastinitial'),
-        'lastname.firstname' => trans('admin/settings/general.username_formats.lastnamefirstname'),
-    ];
-
-    $select = '<select name="'.$name.'" class="'.$class.'" style="width: 100%" aria-label="'.$name.'">';
-    foreach ($formats as $format => $label) {
-        $select .= '<option value="'.$format.'"'.($selected == $format ? ' selected="selected" role="option" aria-selected="true"' : ' aria-selected="false"').'>'.$label.'</option> '."\n";
-    }
-
-    $select .= '</select>';
-
-    return $select;
 });

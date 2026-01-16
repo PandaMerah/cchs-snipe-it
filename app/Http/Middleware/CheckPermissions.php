@@ -3,29 +3,29 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Gate;
+use Config;
+use Route;
 
 class CheckPermissions
 {
-    /**
-     * Handle the ACLs for permissions.
-     *
-     * The $section variable is passed via the route middleware,
-     * 'middleware' => [authorize:superadmin']
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @param  string|null  $section
-     * @return mixed
-     */
-    public function handle($request, Closure $next, $section = null)
+  /**
+   * Handle the ACLs for permissions.
+   *
+   * @param  \Illuminate\Http\Request  $request
+   * @param  \Closure  $next
+   * @param  string|null  $guard
+   * @return mixed
+   */
+    public function handle($request, Closure $next, $section = null, $guard = null)
     {
-        if (Gate::allows($section)) {
+
+        if (($request->user()->hasAccess($section)) || ($request->user()->isSuperUser())) {
             return $next($request);
         }
 
         return response()->view('layouts/basic', [
-            'content' => view('errors/403'),
-        ], 403);
+          'content' => view('errors/403')
+        ]);
+
     }
 }

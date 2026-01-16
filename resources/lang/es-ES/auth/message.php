@@ -2,44 +2,35 @@
 
 return array(
 
-    'account_already_exists' => 'Ya existe una cuenta con este correo electrónico.',
-    'account_not_found'      => 'El nombre de usuario o la contraseña son incorrectos.',
-    'account_not_activated'  => 'Esta cuenta de usuario no está activada.',
-    'account_suspended'      => 'Esta cuenta de usuario está suspendida.',
-
-    'two_factor' => array(
-        'already_enrolled'      => 'Su dispositivo ya está inscrito.',
-        'success'               => 'Ha iniciado sesión exitosamente.',
-        'code_required'         => 'Se requiere el código de autenticación de doble factor (2FA).',
-        'invalid_code'          => 'El código de doble factor es inválido.',
-        'enter_two_factor_code' => 'Por favor ingrese su código de autenticación de doble factor.',
-        'please_enroll'         => 'Por favor inscriba un dispositivo en la autenticación de dos factores.',
-    ),
+    'account_already_exists' => 'Ya existe un usuario con este e-mail.',
+    'account_not_found'      => 'El nombre de usuario o contraseña es incorrecta.',
+    'account_not_activated'  => 'Este usuario no está activado.',
+    'account_suspended'      => 'Este usuario está desactivado.',
+    'account_banned'         => 'Este usuario ha sido expulsado.',
 
     'signin' => array(
-        'error'   => 'Ha habido un problema al iniciar sesión. Por favor, inténtelo de nuevo.',
-        'success' => 'Ha iniciado sesión exitosamente.',
-    ),
-
-    'logout' => array(
-        'error'   => 'Hubo un problema al intentar cerrar la sesión, por favor inténtelo de nuevo.',
-        'success' => 'Ha cerrado la sesión exitosamente.',
+        'error'   => 'Ha habido un problema al iniciar sesión. Por favor, vuelve a intentarlo.',
+        'success' => 'has iniciado sesión correctamente.',
     ),
 
     'signup' => array(
-        'error'   => 'Hubo un problema al crear la cuenta. Por favor, inténtelo de nuevo.',
+        'error'   => 'Ha habido un problema al crear la cuenta. Por favor, vuelve a intentarlo.',
         'success' => 'Cuenta creada correctamente.',
     ),
 
-    'forgot-password' => array(
-        'error'   => 'Ha habido un problema al obtener un código de restablecimiento de la contraseña. Por favor, inténtelo de nuevo.',
-        'success' => 'Si esa dirección de correo electrónico existe en nuestro sistema, recibirá un correo electrónico de recuperación de contraseña.',
-    ),
+        'forgot-password' => array(
+            'error'   => 'Ha habido un problema al intentar resetear el password. Por favor, vuelve a intentarlo.',
+            'success' => 'Email de recuperación de password enviado.',
+        ),
 
-    'forgot-password-confirm' => array(
-        'error'   => 'Hubo un problema al intentar restablecer su contraseña, por favor, inténtelo de nuevo.',
-        'success' => 'Su contraseña se ha restablecido correctamente.',
-    ),
+        'forgot-password-confirm' => array(
+            'error'   => 'Ha habido un problema al intentar resetear el password. Por favor, vuelve a intentarlo.',
+            'success' => 'El password ha sido reseteado correctamente.',
+        ),
 
+    'activate' => array(
+        'error'   => 'Ha habido un problema al intentar activar la cuenta. Por favor, vuelve a intentarlo..',
+        'success' => 'Cuenta correctamente activada.',
+    ),
 
 );

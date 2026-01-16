@@ -2,15 +2,16 @@
 
 return array(
 
-    'create'				=> 'Crear modelo de activo',
-    'created_at' 			=> 'Creado el',
-    'eol'	 				=> 'Fin de soporte (EOL)',
-    'modelnumber'   		=> 'Modelo No.',
-    'name'      			=> 'Nombre del modelo de activo',
-    'numassets' 			=> 'Activos',
-    'title'					=> 'Modelos de activos',
-    'update'				=> 'Actualizar modelo de activo',
-    'view'					=> 'Ver modelo de activo',
-    'clone'				    => 'Clonar modelo',
-    'edit'				    => 'Editar modelo',
+    'create'				=> 'Create Asset Model',
+    'created_at' 			=> 'Created at',
+    'eol'	 				=> 'EOL',
+    'modelnumber'   		=> 'Model No.',
+    'name'      			=> 'Asset Model Name',
+    'numassets' 			=> 'Assets',
+    'title'					=> 'Asset Models',
+    'update'				=> 'Update Asset Model',
+    'view'					=> 'View Asset Model',
+    'update'				=> 'Update Asset Model',
+    'clone'				=> 'Clone Model',
+    'edit'				=> 'Edit Model',
 );

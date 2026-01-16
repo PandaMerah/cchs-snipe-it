@@ -1,20 +1,18 @@
 <?php
-
-return [
-    'does_not_exist' => '公司不存在。',
-    'deleted'        => '已删除公司',
-    'assoc_users'    => '此公司下至少关联了一个型号，目前不能被删除，请确定您的所有型号不在此公司下，然后重试。 ',
-    'create' => [
-        'error'   => '新增公司失败，请重试。',
-        'success' => '新增公司成功。',
-    ],
-    'update' => [
-        'error'   => '更新公司失败，请重试。',
-        'success' => '更新公司成功。',
-    ],
-    'delete' => [
-        'confirm' => '确定要删除这个公司吗？',
-        'error'   => '删除公司出错，请重试。',
-        'success' => '删除公司成功。',
-    ],
-];
+return array(
+    'does_not_exist' => 'Company does not exist.',
+    'assoc_users'    => 'This company is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this company and try again. ',
+    'create' => array(
+        'error'   => 'Company was not created, please try again.',
+        'success' => 'Company created successfully.'
+    ),
+    'update' => array(
+        'error'   => 'Company was not updated, please try again',
+        'success' => 'Company updated successfully.'
+    ),
+    'delete' => array(
+        'confirm' => 'Are you sure you wish to delete this company?',
+        'error'   => 'There was an issue deleting the company. Please try again.',
+        'success' => 'The Company was deleted successfully.'
+    )
+);

@@ -27,4 +27,5 @@ class RemoveDeployableBooleanFromStatusLabels extends Migration
             $table->boolean('deployable');
         });
     }
+
 }

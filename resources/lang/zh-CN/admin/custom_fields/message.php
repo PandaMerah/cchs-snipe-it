@@ -3,56 +3,49 @@
 return array(
 
     'field' => array(
-        'invalid'   => '字段不存在',
-        'already_added'   => '字段已存在',
-        'none_selected'   => '未选择字段',
+        'invalid'   => 'That field does not exist.',
+        'already_added'   => 'Field already added',
 
         'create' => array(
-            'error'   => '新增字段失败，请重试',
-            'success' => '新增字段成功。',
-            'assoc_success' => '增加字段到字段集成功'
+            'error'   => 'Field was not created, please try again.',
+            'success' => 'Field created successfully.',
+            'assoc_success' => 'Field successfully added to fieldset.'
         ),
 
         'update' => array(
-            'error'   => '更新字段失败，请重试。',
-            'success' => '更新字段成功'
+            'error'   => 'Field was not updated, please try again',
+            'success' => 'Field updated successfully.'
         ),
 
         'delete' => array(
-            'confirm'   	=> '你确定要删除这个字段？',
-            'error'   => '删除字段失败，请重试。',
-            'success' => '删除字段成功',
-            'in_use'   => '字段还在使用中',
+            'confirm'   	=> 'Are you sure you wish to delete this field?',
+            'error'   => 'There was an issue deleting the field. Please try again.',
+            'success' => 'The field was deleted successfully.',
+            'in_use'   => 'Field is still in use.',
         )
 
     ),
 
     'fieldset' => array(
 
-        'does_not_exist' => '现场集不存在',
+
 
         'create' => array(
-            'error'   => '新增字段集失败，请重试',
-            'success' => '新增字段集成功'
+            'error'   => 'Fieldset was not created, please try again.',
+            'success' => 'Fieldset created successfully.'
         ),
 
         'update' => array(
-            'error'   => '更新字段集失败，请重试。',
-            'success' => '更新字段集成功'
+            'error'   => 'Fieldset was not updated, please try again',
+            'success' => 'Fieldset updated successfully.'
         ),
 
         'delete' => array(
-            'confirm'   	=> '确定要删除这个字段集吗？',
-            'error'   => '删除字段集失败，请重试。',
-            'success' => '删除字段集成功',
-            'in_use'   => '字段集还在使用中',
+            'confirm'   	=> 'Are you sure you wish to delete this fieldset?',
+            'error'   => 'There was an issue deleting the fieldset. Please try again.',
+            'success' => 'The fieldset was deleted successfully.',
+            'in_use'   => 'Fieldset is still in use.',
         )
-
-    ),
-
-    'fieldset_default_value' => array(
-
-        'error' => '验证默认字段集时出错。',
 
     ),
 

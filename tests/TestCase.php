@@ -1,53 +1,42 @@
 <?php
 
-namespace Tests;
-
-use App\Http\Middleware\SecurityHeaders;
-use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use RuntimeException;
-use Tests\Support\AssertsAgainstSlackNotifications;
-use Tests\Support\AssertHasActionLogs;
-use Tests\Support\CanSkipTests;
-use Tests\Support\CustomTestMacros;
-use Tests\Support\InteractsWithAuthentication;
-use Tests\Support\InitializesSettings;
-
-abstract class TestCase extends BaseTestCase
+class TestCase extends Illuminate\Foundation\Testing\TestCase
 {
-    use AssertsAgainstSlackNotifications;
-    use CanSkipTests;
-    use CreatesApplication;
-    use CustomTestMacros;
-    use InteractsWithAuthentication;
-    use InitializesSettings;
-    use LazilyRefreshDatabase;
-    use AssertHasActionLogs;
+    /**
+     * The base URL to use while testing the application.
+     *
+     * @var string
+     */
+    protected $baseUrl = 'http://snipe-it5.dev:8888';
 
-    private array $globallyDisabledMiddleware = [
-        SecurityHeaders::class,
-    ];
-
-    protected function setUp(): void
+    function __construct()
     {
-        $this->guardAgainstMissingEnv();
-
         parent::setUp();
-
-        $this->registerCustomMacros();
-
-        $this->withoutMiddleware($this->globallyDisabledMiddleware);
-
-        $this->initializeSettings();
     }
 
-    private function guardAgainstMissingEnv(): void
+    /**
+     * Creates the application.
+     *
+     * @return \Illuminate\Foundation\Application
+     */
+    public function createApplication()
     {
-        if (!file_exists(realpath(__DIR__ . '/../') . '/.env.testing')) {
-            throw new RuntimeException(
-                '.env.testing file does not exist. Aborting to avoid wiping your local database.'
-            );
-        }
+        putenv('DB_DEFAULT=sqlite');
+        $app = require __DIR__.'/../bootstrap/app.php';
+        $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+        return $app;
     }
 
+    public function setUp()
+    {
+        Artisan::call('migrate');
+        parent::setUp();
+        //Artisan::call('migrate');
+    }
+
+    public function tearDown()
+    {
+        //Artisan::call('migrate:reset');
+        parent::tearDown();
+    }
 }

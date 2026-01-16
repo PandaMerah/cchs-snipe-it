@@ -1,207 +1,212 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Helpers\Helper;
-use App\Models\Group;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use \Illuminate\Contracts\View\View;
-use \App\Models\User;
+use Config;
+use Input;
+use Lang;
+use Redirect;
+use App\Models\Setting;
+use Validator;
+use View;
 
-/**
- * This controller handles all actions related to User Groups for
- * the Snipe-IT Asset Management application.
- *
- * @version    v1.0
- */
 class GroupsController extends Controller
 {
     /**
-     * Returns a view that invokes the ajax tables which actually contains
-     * the content for the user group listing, which is generated in getDatatable.
+     * Show a list of all the groups.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net]
-     * @see GroupsController::getDatatable() method that generates the JSON response
-     * @since [v1.0]
+     * @return View
      */
-    public function index(): View
+    public function getIndex()
     {
-        return view('groups/index');
+        // Show the page
+        return View::make('groups/index', compact('groups'));
     }
 
     /**
-     * Returns a view that displays a form to create a new User Group.
+     * Group create.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net]
-     * @see GroupsController::postCreate()
-     * @since [v1.0]
+     * @return View
      */
-    public function create(Request $request) : View
+    public function getCreate()
     {
-        $group = new Group;
+        $group = new \App\Models\Group;
         // Get all the available permissions
         $permissions = config('permissions');
-        $groupPermissions = Helper::selectedPermissionsArray($permissions, $permissions);
-        $selectedPermissions = $request->old('permissions', $groupPermissions);
-        $users_query = User::where('show_in_list', 1)->whereNull('deleted_at');
-        $users_count = $users_query->count();
 
-        $users = collect();
-        if ($users_count <= config('app.max_unpaginated_records')) {
-            $users = $users_query->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')->get();
-        }
+
+        $selectedPermissions = Input::old('permissions', array());
 
         // Show the page
-        return view('groups/edit', compact('permissions', 'selectedPermissions', 'groupPermissions'))
-            ->with('group', $group)
-            ->with('associated_users', collect())
-            ->with('unselected_users', $users)
-            ->with('all_users_count', $users_count);
+        return View::make('groups/edit', compact('permissions', 'selectedPermissions'))->with('group', $group);
     }
 
     /**
-     * Validates and stores the new User Group data.
+     * Group create form processing.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net]
-     * @see GroupsController::getCreate()
-     * @since [v1.0]
+     * @return Redirect
      */
-    public function store(Request $request) : RedirectResponse
+    public function postCreate()
     {
         // create a new group instance
-        $group = new Group();
-        $group->name = $request->input('name');
+        $group = new \App\Models\Group();
+        // Update the consumable data
+        $group->name = e(Input::get('name'));
 
-        if ($request->filled('permission')) {
-            $group->permissions = json_encode($request->array('permission'));
-        } else {
-            $group->permissions = null;
-        }
-
-        $group->permissions = json_encode($request->input('permission'));
-        $group->created_by = auth()->id();
-        $group->notes = $request->input('notes');
-
+        // Was the consumable created?
         if ($group->save()) {
-
-            if ($request->filled('users_to_sync')) {
-                $associated_users = explode(',',$request->input('users_to_sync'));
-                $group->users()->sync($associated_users);
-            }
-            return redirect()->route('groups.index')->with('success', trans('admin/groups/message.success.create'));
+            // Redirect to the new consumable  page
+            return Redirect::to("admin/groups")->with('success', Lang::get('admin/groups/message.create.success'));
         }
 
-        return redirect()->back()->withInput()->withErrors($group->getErrors());
+        return Redirect::back()->withInput()->withErrors($group->getErrors());
+
+
     }
 
     /**
-     * Returns a view that presents a form to edit a User Group.
+     * Group update.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net]
-     * @see GroupsController::postEdit()
-     * @param int $id
-     * @since [v1.0]
+     * @param  int  $id
+     * @return View
      */
-    public function edit(Group $group) : View | RedirectResponse
+    public function getEdit($id = null)
     {
+        $group = \App\Models\Group::find($id);
+        $group->name = e(Input::get('name'));
+        $group->permissions = json_decode($group->permissions, true);
         $permissions = config('permissions');
-        $groupPermissions = $group->decodePermissions();
 
-        if ((!is_array($groupPermissions)) || (!$groupPermissions)) {
-            $groupPermissions = [];
-        }
-
-        $selected_array = Helper::selectedPermissionsArray($permissions, $groupPermissions);
-
-
-        $users_query = User::where('show_in_list', 1)->whereNull('deleted_at');
-        $users_count = $users_query->count();
-
-        $associated_users = collect();
-        $unselected_users = collect();
-
-        if ($users_count <= config('app.max_unpaginated_records')) {
-            $associated_users = $group->users()->where('show_in_list', 1)->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')->get();
-            // Get the unselected users
-            $unselected_users = User::where('show_in_list', 1)->whereNotIn('id', $associated_users->pluck('id')->toArray())->orderBy('first_name', 'asc')->orderBy('last_name', 'asc')->get();
-        }
-
-        return view('groups.edit', compact('group', 'permissions', 'selected_array', 'groupPermissions'))
-            ->with('associated_users', $associated_users)
-            ->with('unselected_users', $unselected_users)
-            ->with('all_users_count', $users_count);
+      // Show the page
+        return View::make('groups/edit', compact('group', 'permissions','allpermissions'));
     }
 
     /**
-     * Validates and stores the updated User Group data.
+     * Group update form processing page.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net]
-     * @see GroupsController::getEdit()
-     * @param int $id
-     * @since [v1.0]
+     * @param  int  $id
+     * @return Redirect
      */
-    public function update(Request $request, Group $group) : RedirectResponse
+    public function postEdit($id = null)
     {
-        $group->name = $request->input('name');
 
-        if ($request->filled('permission')) {
-            $group->permissions = json_encode($request->array('permission'));
-        } else {
-            $group->permissions = null;
+        if (!$group = \App\Models\Group::find($id)) {
+            return Redirect::route('groups')->with('error', Lang::get('admin/groups/message.group_not_found', compact('id')));
+
         }
+        $group->name = e(Input::get('name'));
 
-        $group->notes = $request->input('notes');
+        if (!config('app.lock_passwords')) {
 
-
-        if (! config('app.lock_passwords')) {
+          // Was the consumable created?
             if ($group->save()) {
-
-                if ($request->has('users_to_sync')) {
-                    $associated_users = explode(',',$request->input('users_to_sync'));
-                    $group->users()->sync($associated_users);
-                }
-
-                return redirect()->route('groups.index')->with('success', trans('admin/groups/message.success.update'));
+              // Redirect to the new consumable  page
+                return Redirect::to("admin/groups")->with('success', Lang::get('admin/groups/message.create.success'));
             }
+            return Redirect::back()->withInput()->withErrors($group->getErrors());
 
-            return redirect()->back()->withInput()->withErrors($group->getErrors());
+        } else {
+            return Redirect::route('update/group', $id)->withInput()->with('error', 'Denied! Editing groups is not allowed in the demo.');
         }
 
-        return redirect()->route('groups.index')->with('error', trans('general.feature_disabled'));
     }
 
     /**
-     * Validates and deletes the User Group.
+     * Delete the given group.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net]
-     * @see GroupsController::getEdit()
-     * @param int $id
-     * @since [v1.0]
+     * @param  int  $id
+     * @return Redirect
      */
-    public function destroy($id) : RedirectResponse
+    public function getDelete($id = null)
     {
-        if (! config('app.lock_passwords')) {
-            if (! $group = Group::find($id)) {
-                return redirect()->route('groups.index')->with('error', trans('admin/groups/message.group_not_found', ['id' => $id]));
-            }
-            $group->delete();
-            return redirect()->route('groups.index')->with('success', trans('admin/groups/message.success.delete'));
-        }
+        if (!config('app.lock_passwords')) {
+            try {
+                // Get group information
+                $group = Sentry::getGroupProvider()->findById($id);
 
-        return redirect()->route('groups.index')->with('error', trans('general.feature_disabled'));
+                // Delete the group
+                $group->delete();
+
+                // Redirect to the group management page
+                return Redirect::route('groups')->with('success', Lang::get('admin/groups/message.success.delete'));
+            } catch (GroupNotFoundException $e) {
+                // Redirect to the group management page
+                return Redirect::route('groups')->with('error', Lang::get('admin/groups/message.group_not_found', compact('id')));
+            }
+        } else {
+            return Redirect::route('groups')->with('error', Lang::get('general.feature_disabled'));
+        }
     }
 
-    /**
-     * Returns a view that invokes the ajax tables which actually contains
-     * the content for the group detail page.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @param $id
-     * @since [v4.0.11]
-     */
-    public function show(Group $group) : View | RedirectResponse
+
+
+    public function getDatatable($status = null)
     {
-      return view('groups/view', compact('group'));
+
+        if (Input::has('offset')) {
+            $offset = e(Input::get('offset'));
+        } else {
+            $offset = 0;
+        }
+
+        if (Input::has('limit')) {
+            $limit = e(Input::get('limit'));
+        } else {
+            $limit = 50;
+        }
+
+        if (Input::get('sort')=='name') {
+            $sort = 'first_name';
+        } else {
+            $sort = e(Input::get('sort'));
+        }
+
+        // Grab all the groups
+        $groups = \App\Models\Group::with('users')->orderBy('name', 'ASC');
+        //$users = Company::scopeCompanyables($users);
+
+        if (Input::has('search')) {
+            $groups = $users->TextSearch(Input::get('search'));
+        }
+
+         $order = Input::get('order') === 'asc' ? 'asc' : 'desc';
+
+        $allowed_columns =
+         [
+           'name','created_at'
+         ];
+
+        $sort = in_array($sort, $allowed_columns) ? $sort : 'name';
+        $groups = $groups->orderBy($sort, $order);
+
+        $groupsCount = $groups->count();
+        $groups = $groups->skip($offset)->take($limit)->get();
+        $rows = array();
+
+        foreach ($groups as $group) {
+            $group_names = '';
+            $inout = '';
+            $actions = '<nobr>';
+
+            $actions .= '<a href="' . route('update/group', $group->id) . '" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a> ';
+
+            if (!config('app.lock_passwords')) {
+                  $actions .= '<a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="' . route('delete/group', $group->id) . '" data-content="'.Lang::get('admin/groups/message.delete.confirm').'" data-title="Delete ' . htmlspecialchars($group->name) . '?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a> ';
+            } else {
+                $actions .= ' <span class="btn delete-asset btn-danger btn-sm disabled"><i class="fa fa-trash icon-white"></i></span>';
+            }
+
+            $actions .= '</nobr>';
+
+            $rows[] = array(
+                'id'         => $group->id,
+                'name'        => $group->name,
+                'users'         => $group->users->count(),
+                'created_at'        => $group->created_at->format('Y-m-d'),
+                'actions'       => ($actions) ? $actions : '',
+            );
+        }
+
+        $data = array('total'=>$groupsCount, 'rows'=>$rows);
+        return $data;
     }
 }

@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class AlterDefaultValuesLicenses extends Migration
 {
@@ -25,4 +25,5 @@ class AlterDefaultValuesLicenses extends Migration
     {
         //
     }
+
 }

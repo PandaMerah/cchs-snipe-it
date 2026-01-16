@@ -2,43 +2,72 @@
 
 {{-- Page title --}}
 @section('title')
-  {{ trans('general.companies') }}
-  @parent
+{{ trans('admin/companies/table.companies') }}
+@parent
+@stop
+
+@section('header_right')
+<a href="{{ route('create/company') }}" class="btn btn-primary pull-right">
+  {{ trans('general.create') }}</a>
 @stop
 
 {{-- Page content --}}
 @section('content')
-  <div class="row">
-    <div class="col-md-9">
-      <div class="box box-default">
-        <div class="box-body">
-            <table
-              data-columns="{{ \App\Presenters\CompanyPresenter::dataTableLayout() }}"
-              data-cookie-id-table="companiesTable"
-              data-id-table="companiesTable"
-              data-side-pagination="server"
-              data-sort-order="asc"
-              data-advanced-search="false"
-              id="companiesTable"
-              data-buttons="companyButtons"
-              class="table table-striped snipe-table"
-              data-url="{{ route('api.companies.index') }}"
-              data-export-options='{
-                        "fileName": "export-companies-{{ date('Y-m-d') }}",
-                        "ignoreColumn": ["actions","image","change","checkbox","checkincheckout","icon"]
-                        }'>
-            </table>
-        </div>
-      </div>
-    </div>
+
+
+<div class="row">
+  <div class="col-md-9">
+    <div class="box box-default">
+      <div class="box-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th class="col-md-1">{{ trans('general.id') }}</th>
+                <th class="col-md-9">{{ trans('admin/companies/table.name') }}</th>
+                <th class="col-md-2">{{ trans('table.actions') }}</th>
+              </tr>
+              @foreach ($companies as $company)
+                <tr>
+                  <td>{{ $company->id }}</td>
+                  <td>{{ $company->name }}</td>
+                  <td>
+                    <form method="POST" action="{{ route('delete/company', $company->id) }}" role="form">
+
+                      <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+
+                      <a href="{{ route('update/company', $company->id) }}" class="btn btn-sm btn-warning"
+                         title="{{ Lang::get('button.edit') }}">
+                        <i class="fa fa-pencil icon-white"></i>
+                      </a>
+
+                      <button type="submit" class="btn btn-sm btn-danger" title="{{ Lang::get('button.delete') }}">
+                        <i class="fa fa-trash icon-white"></i>
+                      </button>
+
+                    </form>
+                  </td>
+                </tr>
+              @endforeach
+            </thead>
+
+            <tbody>
+            </tbody>
+          </table>
+        </div><!-- /.box-body -->
+      </div><!-- /.box -->
+  </div>
+</div>
+
     <!-- side address column -->
     <div class="col-md-3">
-      <h2>{{ trans('admin/companies/general.about_companies') }}</h2>
-      <p>{{ trans('admin/companies/general.about_companies_description') }}</p>
+      <h4>About Companies</h4>
+      <p>
+        You can use companies as a simple placeholder, or you can use them to restrict asset visibility and availability to users with a specific company.
+      </p>
+
+    </div>
   </div>
+</div>
 
-@stop
-
-@section('moar_scripts')
-  @include ('partials.bootstrap-table')
 @stop

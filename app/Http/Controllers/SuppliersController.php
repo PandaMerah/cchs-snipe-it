@@ -1,179 +1,290 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Actions\Suppliers\DestroySupplierAction;
-use App\Exceptions\ItemStillHasAccessories;
-use App\Exceptions\ItemStillHasComponents;
-use App\Exceptions\ItemStillHasConsumables;
-use App\Exceptions\ItemStillHasMaintenances;
-use App\Exceptions\ItemStillHasAssets;
-use App\Exceptions\ItemStillHasLicenses;
-use App\Http\Requests\ImageUploadRequest;
+use Image;
+use App\Models\AssetMaintenance;
+use Input;
+use Lang;
 use App\Models\Supplier;
-use Illuminate\Http\RedirectResponse;
-use \Illuminate\Contracts\View\View;
-use Illuminate\Support\MessageBag;
+use Redirect;
+use App\Models\Setting;
+use Str;
+use View;
+use Auth;
 
-/**
- * This controller handles all actions related to Suppliers for
- * the Snipe-IT Asset Management application.
- *
- * @version    v1.0
- */
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 class SuppliersController extends Controller
 {
     /**
      * Show a list of all suppliers
      *
-     * @return \Illuminate\Contracts\View\View
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @return View
      */
-    public function index() : View
+    public function getIndex()
     {
-        $this->authorize('view', Supplier::class);
-        return view('suppliers/index');
+        // Grab all the suppliers
+        $suppliers = Supplier::orderBy('created_at', 'DESC')->get();
+
+        // Show the page
+        return View::make('suppliers/index', compact('suppliers'));
     }
+
 
     /**
      * Supplier create.
      *
+     * @return View
      */
-    public function create() : View
+    public function getCreate()
     {
-        $this->authorize('create', Supplier::class);
-        return view('suppliers/edit')->with('item', new Supplier);
+        return View::make('suppliers/edit')->with('supplier', new Supplier);
     }
+
 
     /**
      * Supplier create form processing.
      *
-     * @param ImageUploadRequest $request
+     * @return Redirect
      */
-    public function store(ImageUploadRequest $request) : RedirectResponse
+    public function postCreate()
     {
-        $this->authorize('create', Supplier::class);
+
+        // get the POST data
+        $new = Input::all();
+
         // Create a new supplier
         $supplier = new Supplier;
         // Save the location data
-        $supplier->name = request('name');
-        $supplier->address = request('address');
-        $supplier->address2 = request('address2');
-        $supplier->city = request('city');
-        $supplier->state = request('state');
-        $supplier->country = request('country');
-        $supplier->zip = request('zip');
-        $supplier->contact = request('contact');
-        $supplier->phone = request('phone');
-        $supplier->fax = request('fax');
-        $supplier->email = request('email');
-        $supplier->tag_color  = $request->input('tag_color');
-        $supplier->notes = request('notes');
-        $supplier->url = $supplier->addhttp(request('url'));
-        $supplier->created_by = auth()->id();
-        $supplier = $request->handleImages($supplier);
+        $supplier->name                 = e(Input::get('name'));
+        $supplier->address              = e(Input::get('address'));
+        $supplier->address2             = e(Input::get('address2'));
+        $supplier->city                 = e(Input::get('city'));
+        $supplier->state                = e(Input::get('state'));
+        $supplier->country              = e(Input::get('country'));
+        $supplier->zip                  = e(Input::get('zip'));
+        $supplier->contact              = e(Input::get('contact'));
+        $supplier->phone                = e(Input::get('phone'));
+        $supplier->fax                  = e(Input::get('fax'));
+        $supplier->email                = e(Input::get('email'));
+        $supplier->notes                = e(Input::get('notes'));
+        $supplier->url                  = $supplier->addhttp(e(Input::get('url')));
+        $supplier->user_id              = Auth::user()->id;
 
-        if ($supplier->save()) {
-            return redirect()->route('suppliers.index')->with('success', trans('admin/suppliers/message.create.success'));
+
+
+
+        if (Input::file('image')) {
+            $image = Input::file('image');
+            $file_name = str_random(25).".".$image->getClientOriginalExtension();
+            $path = public_path('uploads/suppliers/'.$file_name);
+            Image::make($image->getRealPath())->resize(300, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            })->save($path);
+                $supplier->image = $file_name;
         }
 
-        return redirect()->back()->withInput()->withErrors($supplier->getErrors());
+            // Was it created?
+        if ($supplier->save()) {
+          // Redirect to the new supplier  page
+            return Redirect::to("admin/settings/suppliers")->with('success', Lang::get('admin/suppliers/message.create.success'));
+        }
+
+
+        return Redirect::back()->withInput()->withErrors($supplier->getErrors());
+
+    }
+
+    public function store()
+    {
+        $supplier=new Supplier;
+        $supplier->name=$new['name'];
+        $supplier->user_id              = Auth::user()->id;
+
+        if ($supplier->save()) {
+            return JsonResponse::create($supplier);
+        }
+        return JsonResponse::create(["error" => "Failed validation: ".print_r($supplier->getErrors(), true)], 500);
+        return JsonResponse::create(["error" => "Couldn't save Supplier"]);
     }
 
     /**
      * Supplier update.
      *
-     * @param  int $supplierId
+     * @param  int  $supplierId
+     * @return View
      */
-    public function edit(Supplier $supplier) : View | RedirectResponse
+    public function getEdit($supplierId = null)
     {
-        $this->authorize('update', Supplier::class);
-        return view('suppliers/edit')->with('item',  $supplier);
+        // Check if the supplier exists
+        if (is_null($supplier = Supplier::find($supplierId))) {
+            // Redirect to the supplier  page
+            return Redirect::to('admin/settings/suppliers')->with('error', Lang::get('admin/suppliers/message.does_not_exist'));
+        }
+
+        // Show the page
+        return View::make('suppliers/edit', compact('supplier'));
     }
+
 
     /**
      * Supplier update form processing page.
      *
-     * @param  int $supplierId
+     * @param  int  $supplierId
+     * @return Redirect
      */
-    public function update(ImageUploadRequest $request, Supplier $supplier) : RedirectResponse
+    public function postEdit($supplierId = null)
     {
-        $this->authorize('update', Supplier::class);
-        // Save the  data
-        $supplier->name = request('name');
-        $supplier->address = request('address');
-        $supplier->address2 = request('address2');
-        $supplier->city = request('city');
-        $supplier->state = request('state');
-        $supplier->country = request('country');
-        $supplier->zip = request('zip');
-        $supplier->contact = request('contact');
-        $supplier->phone = request('phone');
-        $supplier->fax = request('fax');
-        $supplier->email = request('email');
-        $supplier->url = $supplier->addhttp(request('url'));
-        $supplier->tag_color  = $request->input('tag_color');
-        $supplier->notes = request('notes');
-        $supplier = $request->handleImages($supplier);
-
-        if ($supplier->save()) {
-            return redirect()->route('suppliers.index')->with('success', trans('admin/suppliers/message.update.success'));
+        // Check if the supplier exists
+        if (is_null($supplier = Supplier::find($supplierId))) {
+            // Redirect to the supplier  page
+            return Redirect::to('admin/settings/suppliers')->with('error', Lang::get('admin/suppliers/message.does_not_exist'));
         }
 
-        return redirect()->back()->withInput()->withErrors($supplier->getErrors());
+        // Save the  data
+        $supplier->name                 = e(Input::get('name'));
+        $supplier->address              = e(Input::get('address'));
+        $supplier->address2             = e(Input::get('address2'));
+        $supplier->city                 = e(Input::get('city'));
+        $supplier->state                = e(Input::get('state'));
+        $supplier->country              = e(Input::get('country'));
+        $supplier->zip                  = e(Input::get('zip'));
+        $supplier->contact              = e(Input::get('contact'));
+        $supplier->phone                = e(Input::get('phone'));
+        $supplier->fax                  = e(Input::get('fax'));
+        $supplier->email                = e(Input::get('email'));
+        $supplier->url                  = $supplier->addhttp(e(Input::get('url')));
+        $supplier->notes                = e(Input::get('notes'));
+
+        if (Input::file('image')) {
+            $image = Input::file('image');
+            $file_name = str_random(25).".".$image->getClientOriginalExtension();
+            $path = public_path('uploads/suppliers/'.$file_name);
+            Image::make($image->getRealPath())->resize(300, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            })->save($path);
+            $supplier->image = $file_name;
+        }
+
+        if (Input::get('image_delete') == 1 && Input::file('image') == "") {
+            $supplier->image = null;
+        }
+
+        if ($supplier->save()) {
+            return Redirect::to("admin/settings/suppliers")->with('success', Lang::get('admin/suppliers/message.update.success'));
+        }
+
+        return Redirect::back()->withInput()->withErrors($supplier->getErrors());
+
     }
 
     /**
      * Delete the given supplier.
      *
-     * @param  int $supplierId
+     * @param  int  $supplierId
+     * @return Redirect
      */
-    public function destroy(Supplier $supplier): RedirectResponse
+    public function getDelete($supplierId)
     {
-        $this->authorize('delete', Supplier::class);
-        try {
-            DestroySupplierAction::run(supplier: $supplier);
-        } catch (ItemStillHasAssets $e) {
-            return redirect()->route('suppliers.index')->with('error', trans('general.bulk_delete_associations.assoc_assets', [
-                'asset_count' => (int) $supplier->assets_count, 'item' => trans('general.supplier')
-            ]));
-        } catch (ItemStillHasMaintenances $e) {
-            return redirect()->route('suppliers.index')->with('error', trans('general.bulk_delete_associations.assoc_maintenances', [
-                'asset_maintenances_count' => $supplier->asset_maintenances_count, 'item' => trans('general.supplier')
-            ]));
-        } catch (ItemStillHasLicenses $e) {
-            return redirect()->route('suppliers.index')->with('error', trans('general.bulk_delete_associations.assoc_licenses', [
-                'licenses_count' => (int) $supplier->licenses_count, 'item' => trans('general.supplier')
-            ]));
-        } catch (ItemStillHasAccessories $e) {
-            return redirect()->route('suppliers.index')->with('error', trans('general.bulk_delete_associations.assoc_accessories', [
-                'accessories_count' => (int) $supplier->accessories_count, 'item' => trans('general.supplier')
-            ]));
-        } catch (ItemStillHasConsumables $e) {
-            return redirect()->route('suppliers.index')->with('error', trans('general.bulk_delete_associations.assoc_consumables', [
-                'consumables_count' => (int) $supplier->consumables_count, 'item' => trans('general.supplier')
-            ]));
-        } catch (ItemStillHasComponents $e) {
-            return redirect()->route('suppliers.index')->with('error', trans('general.bulk_delete_associations.assoc_components', [
-                'components_count' => (int) $supplier->components_count, 'item' => trans('general.supplier')
-            ]));
-        } catch (\Exception $e) {
-            report($e);
-            return redirect()->route('suppliers.index')->with('error', trans('admin/suppliers/message.delete.error'));
+        // Check if the supplier exists
+        if (is_null($supplier = Supplier::find($supplierId))) {
+            // Redirect to the suppliers page
+            return Redirect::to('admin/settings/suppliers')->with('error', Lang::get('admin/suppliers/message.not_found'));
         }
 
-        return redirect()->route('suppliers.index')->with('success', trans('admin/suppliers/message.delete.success'));
+        if ($supplier->num_assets() > 0) {
+
+            // Redirect to the asset management page
+            return Redirect::to('admin/settings/suppliers')->with('error', Lang::get('admin/suppliers/message.assoc_users'));
+        } else {
+
+            // Delete the supplier
+            $supplier->delete();
+
+            // Redirect to the suppliers management page
+            return Redirect::to('admin/settings/suppliers')->with('success', Lang::get('admin/suppliers/message.delete.success'));
+        }
+
     }
 
+
     /**
-     *  Get the asset information to present to the supplier view page
-     *
-     * @param null $supplierId
-     * @internal param int $assetId
-     */
-    public function show(Supplier $supplier) : View | RedirectResponse
+    *  Get the asset information to present to the supplier view page
+    *
+    * @param  int  $assetId
+    * @return View
+    **/
+    public function getView($supplierId = null)
     {
-        $this->authorize('view', Supplier::class);
-        return view('suppliers/view', compact('supplier'));
+        $supplier = Supplier::find($supplierId);
+
+        if (isset($supplier->id)) {
+                return View::make('suppliers/view', compact('supplier'));
+        } else {
+            // Prepare the error message
+            $error = Lang::get('admin/suppliers/message.does_not_exist', compact('id'));
+
+            // Redirect to the user management page
+            return Redirect::route('suppliers')->with('error', $error);
+        }
+
+
+    }
+
+    public function getDatatable()
+    {
+        $suppliers = Supplier::select(array('id','name','address','address2','city','state','country','fax', 'phone','email','contact'))
+        ->whereNull('deleted_at');
+
+        if (Input::has('search')) {
+            $suppliers = $suppliers->TextSearch(e(Input::get('search')));
+        }
+
+        if (Input::has('offset')) {
+            $offset = e(Input::get('offset'));
+        } else {
+            $offset = 0;
+        }
+
+        if (Input::has('limit')) {
+            $limit = e(Input::get('limit'));
+        } else {
+            $limit = 50;
+        }
+
+        $allowed_columns = ['id','name','address','phone','contact','fax','email'];
+        $order = Input::get('order') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array(Input::get('sort'), $allowed_columns) ? Input::get('sort') : 'created_at';
+
+        $suppliers->orderBy($sort, $order);
+
+        $suppliersCount = $suppliers->count();
+        $suppliers = $suppliers->skip($offset)->take($limit)->get();
+
+        $rows = array();
+
+        foreach ($suppliers as $supplier) {
+            $actions = '<a href="'.route('update/supplier', $supplier->id).'" class="btn btn-warning btn-sm" style="margin-right:5px;"><i class="fa fa-pencil icon-white"></i></a><a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/supplier', $supplier->id).'" data-content="'.Lang::get('admin/suppliers/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($supplier->name).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';
+
+            $rows[] = array(
+                'id'                => $supplier->id,
+                'name'              => (string)link_to('admin/settings/suppliers/'.$supplier->id.'/view', $supplier->name),
+                'contact'           => $supplier->contact,
+                'address'           => $supplier->address.' '.$supplier->address2.' '.$supplier->city.' '.$supplier->state.' '.$supplier->country,
+                'phone'             => $supplier->phone,
+                'fax'             => $supplier->fax,
+                'email'             => ($supplier->email!='') ? '<a href="mailto:'.$supplier->email.'">'.$supplier->email.'</a>' : '',
+                'assets'            => $supplier->num_assets(),
+                'licenses'          => $supplier->num_licenses(),
+                'actions'           => $actions
+            );
+        }
+
+        $data = array('total' => $suppliersCount, 'rows' => $rows);
+
+        return $data;
+
     }
 }

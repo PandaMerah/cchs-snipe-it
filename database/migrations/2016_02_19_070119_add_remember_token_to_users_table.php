@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class AddRememberTokenToUsersTable extends Migration
 {
@@ -12,11 +12,9 @@ class AddRememberTokenToUsersTable extends Migration
      */
     public function up()
     {
-        if (! Schema::hasColumn('users', 'remember_token')) {
-            Schema::table('users', function (Blueprint $table) {
-                $table->text('remember_token')->nullable()->default(null);
-            });
-        }
+        Schema::table('users', function (Blueprint $table) {
+          $table->text('remember_token')->nullable()->default(NULL);
+        });
     }
 
     /**
@@ -27,7 +25,7 @@ class AddRememberTokenToUsersTable extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('remember_token');
+            //
         });
     }
 }

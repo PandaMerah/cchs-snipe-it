@@ -1,12 +1,14 @@
 <?php
 
 return array(
-    'checkout'                          => 'Checka ut förbrukningsvara till användare',
-    'consumable_name'                   => 'Namn på förbrukningsvara',
-    'create'                            => 'Skapa förbrukningvara',
-    'item_no'                           => 'Objektnummer',
-    'remaining' 			            => 'Återstående',
-    'total' 			                => 'Totalt',
-    'update'                            => 'Uppdatera förbrukningsvara',
-    'inventory_warning'                 => 'Lagret av denna förbrukningsvara är under minima; :min_count stycken.',
+    'about_consumables_title' 			=> 'About Consumables',
+    'about_consumables_text'  			=> 'Consumables are anything purchased that will be used up over time. For example, printer ink or copier paper.',
+    'consumable_name'                  => 'Consumable Name',
+    'cost'				=> 'Purchase Cost',
+    'create'                             => 'Create Consumable',
+    'date'					=> 'Purchase Date',
+    'order'					=> 'Order Number',
+    'remaining' 			             => 'Remaining',
+    'total' 			                 => 'Total',
+    'update'                            => 'Update Consumable',
 );

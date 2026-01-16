@@ -1,50 +1,74 @@
-@extends('layouts/edit-form', [
-    'createText' => trans('admin/companies/table.create') ,
-    'updateText' => trans('admin/companies/table.update'),
-    'helpPosition'  => 'right',
-    'helpText' => trans('help.companies'),
-    'formAction' => (isset($item->id)) ? route('companies.update', ['company' => $item->id]) : route('companies.store'),
-])
+@extends('layouts/default')
+
+{{-- Page title --}}
+@section('title')
+  @if ($company->id)
+    {{ trans('admin/companies/table.update') }}
+  @else
+    {{ trans('admin/companies/table.create') }}
+  @endif
+@parent
+@stop
+
+@section('header_right')
+<a href="{{ URL::previous() }}" class="btn btn-primary pull-right">
+  {{ trans('general.back') }}</a>
+@stop
+
 
 {{-- Page content --}}
-@section('inputFields')
-@include ('partials.forms.edit.name', ['translated_name' => trans('admin/companies/table.name')])
-@include ('partials.forms.edit.phone')
-@include ('partials.forms.edit.fax')
-@include ('partials.forms.edit.email')
-@include ('partials.forms.edit.image-upload', ['image_path' => app('companies_upload_path')])
+@section('content')
 
-<div class="form-group{!! $errors->has('notes') ? ' has-error' : '' !!}">
-    <label for="notes" class="col-md-3 control-label">{{ trans('general.notes') }}</label>
-    <div class="col-md-8">
 
-        <x-input.textarea
-                name="notes"
-                id="notes"
-                :value="old('notes', $item->notes)"
-                placeholder="{{ trans('general.placeholders.notes') }}"
-                aria-label="notes"
-                rows="5"
-        />
+<div class="row">
+  <div class="col-md-9">
 
-    </div>
+
+
+    <form class="form-horizontal" method="post" action="" autocomplete="off">
+    <!-- CSRF Token -->
+    <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+
+    <div class="box box-default">
+      @if ($company->id)
+        <div class="box-header with-border">
+          <h3 class="box-title">{{ $company->name }}</h3>
+        </div><!-- /.box-header -->
+      @endif
+
+       <div class="box-body">
+
+         <!-- Company Name -->
+          <div class="form-group {{ $errors->has('name') ? ' has-error' : '' }}">
+            <label for="name" class="col-md-3 control-label">{{ trans('admin/companies/table.name') }}
+            <i class='fa fa-asterisk'></i></label>
+          </label>
+          <div class="col-md-9">
+              <input class="form-control" type="text" name="name" id="name" value="{{ Input::old('name', $company->name) }}" />
+            {!! $errors->first('name', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
+            </div>
+          </div>
+          <!-- /Company Name -->
+
+       </div>
+       <!-- /Panel body -->
+       <div class="box-footer text-right">
+           <button type="submit" class="btn btn-success"><i class="fa fa-check icon-white"></i> {{ trans('general.save') }}</button>
+       </div>
+       <!-- /Panel footer -->
+   </div>
+   <!-- /Panel  -->
+</form>
 </div>
+    <!-- side address column -->
+    <div class="col-md-3">
 
-<fieldset name="color-preferences">
-    <x-form-legend help_text="{{ trans('general.tag_color_help') }}">
-        {{ trans('general.tag_color') }}
-    </x-form-legend>
-    <!--  color -->
-    <div class="form-group {{ $errors->has('tag_color') ? 'error' : '' }}">
-        <label for="tag_color" class="col-md-3 control-label">
-            {{ trans('general.tag_color') }}
-        </label>
-        <div class="col-md-9">
-            <x-input.colorpicker :item="$item" id="tag_color" :value="old('tag_color', ($item->tag_color ?? '#f4f4f4'))" name="tag_color" id="tag_color" />
-            {!! $errors->first('tag_color', '<span class="alert-msg" aria-hidden="true">:message</span>') !!}
-        </div>
+      <h4>About Companies</h4>
+      <p>
+        Companies can be used as a simple identifier field, or can be used to limit visibility of assets, users, etc if full company support is enabled in your Admin settings.
+      </p>
     </div>
-</fieldset>
-
+  </div>
+</div>
 
 @stop

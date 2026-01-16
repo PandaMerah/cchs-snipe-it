@@ -1,32 +1,24 @@
 <?php
 
-return [
+return array(
 
-    'asset_tag'   	=> 'Tillgångstagg',
-    'asset_model'       => 'Modell',
-    'assigned_to'   => 'Tilldelad till',
-    'book_value'  	=> 'Nuvarande värde',
-    'change' 		=> 'In/ut',
-    'checkout_date' => 'Utcheck.dat.',
-    'checkoutto' 	=> 'Utcheckad',
-    'components_cost' => 'Total kostnad för komponenter',
-    'current_value' => 'Nuvarande värde',
-    'diff' 			=> 'Differens',
-    'dl_csv' 		=> 'Ladda ned CSV',
+    'asset_tag'   	=> 'Asset Tag',
+    'asset_model'       => 'Model',
+    'book_value'  	=> 'Value',
+    'change' 		=> 'In/Out',
+    'checkout_date' => 'Checkout Date',
+    'checkoutto' 	=> 'Checked Out',
+    'diff' 			=> 'Diff',
+    'dl_csv' 		=> 'Download CSV',
     'eol' 			=> 'EOL',
     'id'      		=> 'ID',
-    'last_checkin_date' => 'Senaste incheck.dat.',
-    'location' 		=> 'Plats',
-    'purchase_cost'	=> 'Pris',
-    'purchase_date'	=> 'Inköpt',
-    'serial'   		=> 'Serienummer',
+    'location' 		=> 'Location',
+    'purchase_cost'	=> 'Cost',
+    'purchase_date'	=> 'Purchased',
+    'serial'   		=> 'Serial',
     'status'   		=> 'Status',
-    'title'      	=> 'Tillgång',
-    'image'		    => 'Bild',
-    'days_without_acceptance' => 'Dagar utan godkännande',
-    'monthly_depreciation' => 'Månatlig värdeminskning',
-    'requesting_user' => 'Begär användare',
-    'requested_date' => 'Begärt datum',
-    'changed'       => 'Ändrad',
-    'icon' => 'Ikon',
-];
+    'title'      	=> 'Asset ',
+    'image'		=> 'Device Image',
+    'days_without_acceptance' => 'Days Without Acceptance'
+
+);

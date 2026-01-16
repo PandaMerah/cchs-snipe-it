@@ -2,57 +2,49 @@
 
 return array(
 
-    'does_not_exist' => 'Licensen finns inte eller så har du inte behörighet att se den.',
-    'user_does_not_exist' => 'Användaren finns inte eller så har du inte behörighet att se den.',
-    'asset_does_not_exist' 	=> 'Den tillgång du försöker sammankoppla med denna licens existerar inte.',
-    'owner_doesnt_match_asset' => 'Den tillgång du försöker sammankoppla med denna licens ägs av någon annan än den person som valts i den tilldelade till rullgardinsmenyn.',
-    'assoc_users'	 => 'Licensen är nu utcheckad till en användare och kan inte raderas. Var god kontrollera licensen först och försök sedan radera igen.',
-    'select_asset_or_person' => 'Du måste välja en tillgång eller en användare, men inte båda.',
-    'not_found' => 'Licensen hittades inte',
-    'seats_available' => ':seat_count säten tillgängliga',
+    'does_not_exist' => 'License does not exist.',
+    'user_does_not_exist' => 'User does not exist.',
+    'asset_does_not_exist' 	=> 'The asset you are trying to associate with this license does not exist.',
+    'owner_doesnt_match_asset' => 'The asset you are trying to associate with this license is owned by somene other than the person selected in the assigned to dropdown.',
+    'assoc_users'	 => 'This license is currently checked out to a user and cannot be deleted. Please check the license in first, and then try deleting again. ',
 
 
     'create' => array(
-        'error'   => 'Licensen kunde inte skapas. Vänligen försök igen.',
-        'success' => 'Licens skapad.'
+        'error'   => 'License was not created, please try again.',
+        'success' => 'License created successfully.'
     ),
 
     'deletefile' => array(
-        'error'   => 'Filen har inte tagits bort. Vänligen försök igen.',
-        'success' => 'Filen har tagits bort.',
+        'error'   => 'File not deleted. Please try again.',
+        'success' => 'File successfully deleted.',
     ),
 
     'upload' => array(
-        'error'   => 'Fil(er) kunde inte laddas upp. Vänligen försök igen.',
-        'success' => 'Fil(er) uppladdad(e).',
-        'nofiles' => 'Du valde inte några filer för uppladdning eller så är filen du försöker ladda upp för stor',
-        'invalidfiles' => 'En eller flera av dina filer är för stora eller är av en filtyp som inte är tillåten. Tillåtna filtyper är png, gif, jpg, jpeg, doc, docx, pdf, txt, zip, rar, rtf, xml och lic.',
+        'error'   => 'File(s) not uploaded. Please try again.',
+        'success' => 'File(s) successfully uploaded.',
+        'nofiles' => 'You did not select any files for upload, or the file you are trying to upload is too large',
+        'invalidfiles' => 'One or more of your files is too large or is a filetype that is not allowed. Allowed filetypes are png, gif, jpg, doc, docx, pdf, and txt.',
     ),
 
     'update' => array(
-        'error'   => 'Licensen kunde inte uppdateras. Vänligen försök igen.',
-        'success' => 'Licens uppdaterad.'
+        'error'   => 'License was not updated, please try again',
+        'success' => 'License updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Är du säker på att du vill radera denna licens?',
-        'error'   => 'Licensen kunde inte tas bort. Vänligen försök igen.',
-        'success' => 'Licensen har tagits bort.'
+        'confirm'   => 'Are you sure you wish to delete this license?',
+        'error'   => 'There was an issue deleting the license. Please try again.',
+        'success' => 'The license was deleted successfully.'
     ),
 
     'checkout' => array(
-        'error'   => 'Det gick inte att checka ut licensen. Vänligen försök igen.',
-        'success' => 'Licens utcheckad.',
-        'not_enough_seats' => 'Inte tillräckligt med licenssäten tillgängliga för utcheckning',
-        'mismatch' => 'Licenssätet som anges matchar inte licensen',
-        'unavailable' => 'Detta säte är inte tillgängligt för utcheckning.',
-        'license_is_inactive' => 'This license is expired or terminated.',
+        'error'   => 'There was an issue checking out the license. Please try again.',
+        'success' => 'The license was checked out successfully'
     ),
 
     'checkin' => array(
-        'error'   => 'Det gick inte att checka in licensen. Vänligen försök igen.',
-        'not_reassignable' => 'Seat has been used',
-        'success' => 'Licens incheckad.'
+        'error'   => 'There was an issue checking in the license. Please try again.',
+        'success' => 'The license was checked in successfully'
     ),
 
 );

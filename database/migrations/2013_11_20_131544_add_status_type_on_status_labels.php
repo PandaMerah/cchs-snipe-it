@@ -27,4 +27,5 @@ class AddStatusTypeOnStatusLabels extends Migration
             $table->dropColumn('deployable');
         });
     }
+
 }

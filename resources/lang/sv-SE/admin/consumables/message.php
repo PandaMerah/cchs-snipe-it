@@ -2,36 +2,34 @@
 
 return array(
 
-    'invalid_category_type' => 'Kategorin måste vara en förbrukningsvarukategori.',
-    'does_not_exist' => 'Förbrukningvaran existerar inte.',
+    'does_not_exist' => 'Consumable does not exist.',
 
     'create' => array(
-        'error'   => 'Förbrukningsvaran kunde inte skapas. Vänligen försök igen.',
-        'success' => 'Förbrukningsvara skapad.'
+        'error'   => 'Consumable was not created, please try again.',
+        'success' => 'Consumable created successfully.'
     ),
 
     'update' => array(
-        'error'   => 'Förbrukningsvaran kunde inte uppdateras.Vänligen försök igen.',
-        'success' => 'Förbruksningsvara uppdaterad.'
+        'error'   => 'Consumable was not updated, please try again',
+        'success' => 'Consumable updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Är du säker på att du vill radera denna förbrukningsartiklar?',
-        'error'   => 'Kunde inte ta bort förbrukningsvaran. Vänligen försök igen.',
-        'success' => 'Förbrukningsvaran raderad.'
+        'confirm'   => 'Are you sure you wish to delete this consumable?',
+        'error'   => 'There was an issue deleting the consumable. Please try again.',
+        'success' => 'The consumable was deleted successfully.'
     ),
 
      'checkout' => array(
-        'error'   		=> 'Förbrukningsvaran kunde inte checkas ut. Vänligen försök igen.',
-        'success' 		=> 'Förbrukningsvaran utcheckad.',
-        'user_does_not_exist' => 'Användaren är ogiltig. Vänligen försök igen.',
-         'unavailable'      => 'Det finns inte tillräckligt med förbrukningsvaror för denna utcheckning. Vänligen kontrollera antalet kvar i lager. ',
+        'error'   		=> 'Consumable was not checked out, please try again',
+        'success' 		=> 'Consumable checked out successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     ),
 
     'checkin' => array(
-        'error'   		=> 'Förbrukningsvaran kunde inte checkas in. Vänligen försök igen.',
-        'success' 		=> 'Förbrukningsvara incheckad.',
-        'user_does_not_exist' => 'Användaren är ogiltig. Vänligen försök igen.'
+        'error'   		=> 'Consumable was not checked in, please try again',
+        'success' 		=> 'Consumable checked in successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     )
 
 

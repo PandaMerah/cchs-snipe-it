@@ -1,8 +1,9 @@
 <?php
 
     return [
-        'title'         => 'Mantenimiento del activo',
-        'asset_name'    => 'Nombre del activo',
+        'title'         => 'Mantenimiento de Equipo',
+        'asset_name'    => 'Nombre del Equipo',
+        'supplier_name' => 'Nombre del Proveedor',
         'is_warranty'   => 'Garantía',
-        'dl_csv'        => 'Descargar CSV',
+        'dl_csv'        => 'Descargar CSV'
     ];

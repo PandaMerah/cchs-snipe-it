@@ -1,16 +1,17 @@
 <?php
 
 return array(
-    'component_name'                  => 'Komponentnamn',
-    'checkin'                             => 'Checka in komponent',
-    'checkout'                             => 'Checka ut komponent',
-    'cost'				=> 'Inköpspris',
-    'create'                             => 'Skapa komponent',
-    'edit'                             => 'Redigera komponent',
-    'date'					=> 'Inköpsdatum',
-    'order'					=> 'Ordernummer',
-    'remaining' 			             => 'Återstående',
-    'total' 			                 => 'Totalt',
-    'update'                            => 'Uppdatera komponent',
-    'checkin_limit'            => 'Incheckat antal måste vara lika med eller mindre än :assigned_qty'
+    'about_components_title' 			=> 'About Components',
+    'about_components_text'  			=> 'Components are items that are part of an asset, for example HDD, RAM, etc.',
+    'component_name'                  => 'Component Name',
+    'checkin'                             => 'Checkin Component',
+    'checkout'                             => 'Checkout Component',
+    'cost'				=> 'Purchase Cost',
+    'create'                             => 'Create Component',
+    'edit'                             => 'Edit Component',
+    'date'					=> 'Purchase Date',
+    'order'					=> 'Order Number',
+    'remaining' 			             => 'Remaining',
+    'total' 			                 => 'Total',
+    'update'                            => 'Update Component',
 );

@@ -6,92 +6,67 @@
 @parent
 @stop
 
-
-@section('header_right')
-    <a href="{{ URL::previous() }}" class="btn btn-primary pull-right">
-        {{ trans('general.back') }}</a>
-@stop
-
 {{-- Page content --}}
 @section('content')
-    <div class="row">
-        <!-- left column -->
-        <div class="col-md-8">
-            <form class="form-horizontal" method="post" action="{{ route('licenses.checkin.save', ['licenseId'=>$licenseSeat->id, 'backTo'=>$backto] ) }}" autocomplete="off">
-                {{csrf_field()}}
 
-                <div class="box box-default">
-                    <div class="box-header with-border">
-                        <h2 class="box-title"> {{ $licenseSeat->license->name }}</h2>
-                    </div>
-                    <div class="box-body">
+<div class="row header">
+    <div class="col-md-12">
+        <a href="{{ URL::previous() }}" class="btn-flat gray pull-right">
+        <i class="fa fa-arrow-left icon-white"></i> {{ trans('general.back') }}</a>
+        <h3> {{ trans('admin/licenses/general.checkin') }} </h3>
+    </div>
+</div>
 
-            <!-- license name -->
+<div class="row form-wrapper">
+<!-- left column -->
+<div class="col-md-10 column">
+
+@if ($backto=='user')
+	<form class="form-horizontal" method="post" action="{{ route('checkin/license', array('licenseeat_id'=> $licenseseat->id, 'backto'=>'user')) }}" autocomplete="off">
+@else
+	<form class="form-horizontal" method="post" action="{{ route('checkin/license', $licenseseat->id) }}" autocomplete="off">
+@endif
+
+    <!-- CSRF Token -->
+    <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+
+
+            <!-- Asset name -->
             <div class="form-group">
-                <label class="col-sm-3 control-label">{{ trans('general.name') }}</label>
-                <div class="col-md-8">
-                    <p class="form-control-static">{{ $licenseSeat->license->name }}</p>
+            <label class="col-sm-2 control-label">{{ trans('admin/hardware/form.name') }}</label>
+                <div class="col-md-6">
+                  <p class="form-control-static">{{ $licenseseat->license->name }}</p>
                 </div>
             </div>
-
-            @if ($licenseSeat->license->company)
-                <!-- accessory name -->
-                <div class="form-group">
-                    <label class="col-sm-3 control-label">{{ trans('general.company') }}</label>
-                    <div class="col-md-6">
-                        <p class="form-control-static">{!! $licenseSeat->license->company->present()->formattedNameLink  !!}</p>
-                    </div>
-                </div>
-            @endif
-
-
-            @if ($licenseSeat->license->category)
-                <!-- category name -->
-                <div class="form-group">
-                    <label class="col-sm-3 control-label">{{ trans('general.category') }}</label>
-                    <div class="col-md-6">
-                        <p class="form-control-static">{!! $licenseSeat->license->category->present()->formattedNameLink  !!}</p>
-                    </div>
-                </div>
-            @endif
 
             <!-- Serial -->
-            @can('viewKeys', $licenseSeat->license)
             <div class="form-group">
-                <label class="col-sm-3 control-label">{{ trans('admin/licenses/form.license_key') }}
-                    <i class="fa-regular fa-clipboard js-copy-link hidden-print" data-clipboard-target=".js-copy-key" aria-hidden="true" data-tooltip="true" data-placement="top" title="{{ trans('general.copy_to_clipboard') }}">
-                        <span class="sr-only">{{ trans('general.copy_to_clipboard') }}</span>
-                    </i>
-                </label>
-                <div class="col-md-8">
-                    <p class="form-control-static">
-                       <code style="white-space: pre-wrap"><span class="js-copy-key">{{ $licenseSeat->license->serial }}</span></code>
-                    </p>
+            <label class="col-sm-2 control-label">{{ trans('admin/hardware/form.serial') }}</label>
+                <div class="col-md-6">
+                  <p class="form-control-static">{{ $licenseseat->license->serial }}</p>
                 </div>
             </div>
-            @endcan
 
             <!-- Note -->
-            <div class="form-group {{ $errors->has('notes') ? 'error' : '' }}">
-                <label for="note" class="col-md-3 control-label">{{ trans('general.checkin_note') }}</label>
-                <div class="col-md-8">
-                    <textarea class="form-control" id="notes" name="notes" rows="5"></textarea>
-                    {!! $errors->first('notes', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
+            <div class="form-group {{ $errors->has('note') ? 'error' : '' }}">
+                <label for="note" class="col-md-2 control-label">{{ trans('admin/hardware/form.notes') }}</label>
+                <div class="col-md-7">
+                    <textarea class="col-md-6 form-control" id="note" name="note">{{ Input::old('note', $licenseseat->note) }}</textarea>
+                    {!! $errors->first('note', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
                 </div>
             </div>
-                        <x-redirect_submit_options
-                                index_route="licenses.index"
-                                :button_label="trans('general.checkin')"
-                                :options="[
-                                'index' => trans('admin/hardware/form.redirect_to_all', ['type' => trans('general.licenses')]),
-                                'item' => trans('admin/hardware/form.redirect_to_type', ['type' => trans('general.license')]),
-                                'target' => trans('admin/hardware/form.redirect_to_type', ['type' => trans('general.user')]),
-                               ]"
-                        />
-                    </div> <!-- /.box-->
-            </form>
-        </div> <!-- /.col-md-7-->
-    </div>
+            <!-- Form actions -->
+                <div class="form-group">
+                <label class="col-md-2 control-label"></label>
+                    <div class="col-md-7">
+                        <a class="btn btn-link" href="{{ route('licenses') }}">{{ trans('button.cancel') }}</a>
+                        <button type="submit" class="btn btn-success"><i class="fa fa-check icon-white"></i> {{ trans('general.checkin') }}</button>
+                    </div>
+                </div>
 
+
+</form>
+</div>
+</div>
 
 @stop

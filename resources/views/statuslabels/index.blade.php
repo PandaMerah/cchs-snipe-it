@@ -6,6 +6,10 @@
 @parent
 @stop
 
+@section('header_right')
+<a href="{{ route('create/statuslabel') }}" class="btn btn-primary pull-right">
+{{ trans('general.create') }}</a>
+@stop
 {{-- Page content --}}
 @section('content')
 
@@ -13,111 +17,76 @@
   <div class="col-md-9">
     <div class="box box-default">
       <div class="box-body">
-            <table
-                    data-columns="{{ \App\Presenters\StatusLabelPresenter::dataTableLayout() }}"
-                    data-cookie-id-table="statuslabelsTable"
-                    data-id-table="statuslabelsTable"
-                    data-show-footer="false"
-                    data-side-pagination="server"
-                    data-sort-order="asc"
-                    data-sort-name="name"
-                    id="statuslabelsTable"
-                    data-buttons="statuslabelButtons"
-                    data-advanced-search="false"
-                    class="table table-striped snipe-table"
-                    data-url="{{ route('api.statuslabels.index') }}"
-                    data-export-options='{
-                "fileName": "export-statuslabels-{{ date('Y-m-d') }}",
-                "ignoreColumn": ["actions","image","change","checkbox","checkincheckout","icon"]
-                }'>
+        <div class="table-responsive">
+
+          <table
+          name="statuslabels"
+          id="table"
+          data-url="{{ route('api.statuslabels.list') }}"
+          data-cookie="true"
+          data-click-to-select="true"
+          data-cookie-id-table="statuslabelsTable-{{ config('version.hash_version') }}">
+            <thead>
+              <tr>
+                <th data-sortable="true" data-field="id" data-visible="false">{{ trans('general.id') }}</th>
+                <th data-sortable="true" data-field="name">{{ trans('admin/statuslabels/table.name') }}</th>
+                <th data-sortable="false" data-field="type">{{ trans('admin/statuslabels/table.status_type') }}</th>
+                <th data-switchable="false" data-searchable="false" data-sortable="false" data-field="actions">{{ Lang::get('table.actions') }}</th>
+              </tr>
+            </thead>
           </table>
+        </div>
       </div>
     </div>
   </div>
   <!-- side address column -->
   <div class="col-md-3">
-    <h2>{{ trans('admin/statuslabels/table.about') }}</h2>
-
-      <div class="box box-default">
-          <div class="box-body">
-              <p>{!!  trans('admin/statuslabels/table.info') !!}</p>
-          </div>
-      </div>
-
-
-      <div class="box box-success">
-          <div class="box-body">
-          <p><i class="fas fa-circle text-green"></i> <strong>{{ trans('admin/statuslabels/table.deployable') }}</strong>: {!!  trans('admin/statuslabels/message.help.deployable')  !!}</p>
-          </div>
-      </div>
-
-      <div class="box box-warning">
-          <div class="box-body">
-              <p><i class="fas fa-circle text-orange"></i> <strong>{{ trans('admin/statuslabels/table.pending') }}</strong>: {{ trans('admin/statuslabels/message.help.pending') }}</p>
-          </div>
-      </div>
-      <div class="box box-danger">
-          <div class="box-body">
-            <p><i class="fas fa-times text-red"></i> <strong>{{ trans('admin/statuslabels/table.undeployable') }}</strong>: {{ trans('admin/statuslabels/message.help.undeployable') }}</p>
-          </div>
-      </div>
-
-      <div class="box box-danger">
-          <div class="box-body">
-              <p><i class="fas fa-times text-red"></i> <strong>{{ trans('admin/statuslabels/table.archived') }}</strong>: {{ trans('admin/statuslabels/message.help.archived') }}</p>
-          </div>
-      </div>
-
+    <h4>{{ trans('admin/statuslabels/table.about') }}</h4>
+    <p>{{ trans('admin/statuslabels/table.info') }}</p>
   </div>
 
 </div>
-@stop
+
 
 @section('moar_scripts')
-@include ('partials.bootstrap-table')
+<script src="{{ asset('assets/js/bootstrap-table.js') }}"></script>
+<script src="{{ asset('assets/js/extensions/cookie/bootstrap-table-cookie.js') }}"></script>
+<script src="{{ asset('assets/js/extensions/mobile/bootstrap-table-mobile.js') }}"></script>
+<script src="{{ asset('assets/js/extensions/export/bootstrap-table-export.js') }}"></script>
+<script src="{{ asset('assets/js/extensions/export/tableExport.js') }}"></script>
+<script src="{{ asset('assets/js/extensions/export/jquery.base64.js') }}"></script>
+<script type="text/javascript">
+    $('#table').bootstrapTable({
+        classes: 'table table-responsive table-no-bordered',
+        undefinedText: '',
+        iconsPrefix: 'fa',
+        showRefresh: true,
+        search: true,
+        pageSize: {{ \App\Models\Setting::getSettings()->per_page }},
+        pagination: true,
+        sidePagination: 'server',
+        sortable: true,
+        cookie: true,
+        mobileResponsive: true,
+        showExport: true,
+        showColumns: true,
+        exportDataType: 'all',
+        exportTypes: ['csv', 'txt','json', 'xml'],
+        maintainSelected: true,
+        paginationFirstText: "{{ trans('general.first') }}",
+        paginationLastText: "{{ trans('general.last') }}",
+        paginationPreText: "{{ trans('general.previous') }}",
+        paginationNextText: "{{ trans('general.next') }}",
+        pageList: ['10','25','50','100','150','200'],
+        icons: {
+            paginationSwitchDown: 'fa-caret-square-o-down',
+            paginationSwitchUp: 'fa-caret-square-o-up',
+            columns: 'fa-columns',
+            refresh: 'fa-refresh'
+        },
 
-  <script nonce="{{ csrf_token() }}">
+    });
+</script>
+@stop
 
-
-      function statuslabelsAssetLinkFormatter(value, row) {
-          if ((row) && (row.name)) {
-              return '<a href="{{ config('app.url') }}/hardware/?status_id=' + row.id + '"> ' + row.name + '</a>';
-          }
-      }
-
-      function statusLabelTypeFormatter (row, value) {
-
-          switch (value.type) {
-              case 'deployable':
-                  text_color = 'green';
-                  icon_style = 'fa-circle';
-                  trans  = '{{ strtolower(trans('admin/hardware/general.deployable')) }}';
-
-                  break;
-              case 'pending':
-                  text_color = 'orange';
-                  icon_style = 'fa-circle';
-                  trans  = '{{ strtolower(trans('general.pending')) }}';
-
-                  break;
-              case 'undeployable':
-                  text_color = 'red';
-                  icon_style = 'fa-circle';
-                  trans  ='{{ trans('admin/statuslabels/table.undeployable') }}';
-
-                  break;
-              default:
-                  text_color = 'red';
-                  icon_style = 'fa-times';
-                  trans  = '{{ strtolower(trans('general.archived')) }}';
-
-          }
-
-          var typename_lower = trans;
-          var typename = typename_lower.charAt(0).toUpperCase() + typename_lower.slice(1);
-          return '<nobr><i class="fa ' + icon_style + ' text-' + text_color + '"></i> ' + typename + '</nobr>';
-
-
-      }
-  </script>
 @stop

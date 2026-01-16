@@ -1,16 +1,17 @@
 <?php
 
 return array(
-    'component_name'                  => 'Nome do Componente',
-    'checkin'                             => 'Devolução do componente',
-    'checkout'                             => 'Atribuição de componente',
-    'cost'				=> 'Preço de custo',
-    'create'                             => 'Criar componente',
-    'edit'                             => 'Editar componente',
-    'date'					=> 'Data de compra',
-    'order'					=> 'Número de encomenda',
-    'remaining' 			             => 'Restantes',
+    'about_components_title' 			=> 'About Components',
+    'about_components_text'  			=> 'Components are items that are part of an asset, for example HDD, RAM, etc.',
+    'component_name'                  => 'Component Name',
+    'checkin'                             => 'Checkin Component',
+    'checkout'                             => 'Checkout Component',
+    'cost'				=> 'Purchase Cost',
+    'create'                             => 'Create Component',
+    'edit'                             => 'Edit Component',
+    'date'					=> 'Purchase Date',
+    'order'					=> 'Order Number',
+    'remaining' 			             => 'Remaining',
     'total' 			                 => 'Total',
-    'update'                            => 'Atualizar componente',
-    'checkin_limit'            => 'Número recebido deve ser igual ou menor que :assigned_qty'
+    'update'                            => 'Update Component',
 );

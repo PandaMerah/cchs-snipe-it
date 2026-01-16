@@ -1,20 +1,16 @@
 <?php
 
 return array(
+    'about_asset_categories' 			=> 'Sobre as Categorias de Ativos',
+    'about_categories'  				=> 'As categorias de ativos lhe ajudam a organizar seus ativos. Algumas categorias de exemplo podem ser &quot;Desktops&quot;, &quot;Notebooks&quot;, &quot;Telefones Celulares&quot;, &quot;Tablets&quot;, e outras, mas você pode usar as categorias de ativos do jeito que você quiser.',
     'asset_categories' 					=> 'Categorias de Ativos',
     'category_name'  					=> 'Nome da Categoria',
-    'email_to_user_upon_checkin' => 'Send email to user upon checkin.',
-    'email_to_user_upon_checkin_and_checkout' => 'Send email to user upon checkin/checkout.',
-    'email_to_initiator'                => 'Envie um e-mail para você quando o usuário aceitar ou recusar o pagamento.',
-    'checkin_email_notification'        => 'Este usuário receberá um email no checkin / checkout.',
+    'checkin_email'                     => 'Enviar e-mail para o usuário na entrega.',
     'clone'                             => 'Clonar Categoria',
     'create'  							=> 'Criar Categoria',
     'edit'                              => 'Editar Categoria',
-    'email_will_be_sent_due_to_global_eula' => 'An email will be sent to the user upon checkout because the global EULA is being used.',
-    'email_will_be_sent_due_to_category_eula' => 'An email will be sent to the user upon checkout because a EULA is set for this category.',
     'eula_text'							=> 'EULA da Categoria',
     'eula_text_help'					=> 'Este campo lhe permite personalizar seus EULAs para tipos específicos de bens. Se você apenas tem um EULA para todos os seus bens, você pode selecionar a caixa abaixo para usar o padrão primário.',
-    'name'                              => 'Nome da Categoria',
     'require_acceptance'				=> 'Requer que usuários confirmem a aceitação de ativos nesta categoria.',
     'required_acceptance'				=> 'Este usuário receberá um e-mail com um link para confirmar a aceitação deste item.',
     'required_eula'						=> 'Este usuário receberá um e-mail com uma cópia do EULA',
@@ -22,10 +18,5 @@ return array(
     'update'  							=> 'Atualizar Categoria',
     'use_default_eula'					=> 'Em vez disso, use o <a href="#" data-toggle="modal" data-target="#eulaModal">EULA padrão primário</a>.',
     'use_default_eula_disabled'			=> '<del>Em vez disso, use o EULA padrão primário.</del> Nenhum EULA padrão primário foi definido. Adicione um nas Configurações.',
-    'use_default_eula_column'			=> 'Usar padrão EULA',
-    'import_require_acceptance'         => 'Requerer Aceitação',
-    'import_checkin_email'              => 'Enviar e-mail de Checkin',
-    'import_eula_text'                  => 'Texto do EULA',
-    'import_category_type'              => 'Tipo de Categoria',
 
 );

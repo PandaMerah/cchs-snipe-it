@@ -2,36 +2,34 @@
 
 return array(
 
-    'does_not_exist' => 'Komponenten existerar inte.',
+    'does_not_exist' => 'Component does not exist.',
 
     'create' => array(
-        'error'   => 'Komponenten kunde inte skapas. Vänligen försök igen.',
-        'success' => 'Komponent skapad.'
+        'error'   => 'Component was not created, please try again.',
+        'success' => 'Component created successfully.'
     ),
 
     'update' => array(
-        'error'   => 'Komponenten kunde inte uppdateras. Vänligen försök igen.',
-        'success' => 'Komponent uppdaterad.'
+        'error'   => 'Component was not updated, please try again',
+        'success' => 'Component updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Är du säker på att du vill radera den här komponenten?',
-        'error'   => 'Kunde inte ta bort komponenten. Vänligen försök igen.',
-        'success' => 'Komponent raderad.',
-        'error_qty'   => 'Some components of this type are still checked out. Please check them in and try again.',
+        'confirm'   => 'Are you sure you wish to delete this component?',
+        'error'   => 'There was an issue deleting the component. Please try again.',
+        'success' => 'The component was deleted successfully.'
     ),
 
      'checkout' => array(
-        'error'   		=> 'Komponenten kunde inte checkas. Vänligen försök igen.',
-        'success' 		=> 'Komponent utcheckad.',
-        'user_does_not_exist' => 'Användaren är ogiltig. Vänligen försök igen.',
-        'unavailable'      => 'Inte tillräckligt med komponenter kvar: :remaining kvar, :requested efterfrågat ',
+        'error'   		=> 'Component was not checked out, please try again',
+        'success' 		=> 'Component checked out successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     ),
 
     'checkin' => array(
-        'error'   		=> 'Komponenten kunde inte checkas in. Vänligen försök igen.',
-        'success' 		=> 'Komponent incheckad.',
-        'user_does_not_exist' => 'Den användaren är ogiltig. Vänligen försök igen.'
+        'error'   		=> 'Component was not checked in, please try again',
+        'success' 		=> 'Component checked in successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     )
 
 

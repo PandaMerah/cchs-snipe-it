@@ -2,27 +2,23 @@
 
 return array(
 
-    'does_not_exist' => 'La categoría no existe.',
-    'assoc_models'	 => 'Esta categoría está asociada actualmente con al menos un modelo y no puede ser eliminada. Actualice los modelos para que ya no hagan referencia a esta categoría e inténtelo de nuevo. ',
-    'assoc_items'	 => 'Esta categoría está asociada actualmente con al menos un: asset_type y no puede ser eliminada. Actualice su :asset_type para que ya no haga referencia a esta categoría e inténtelo de nuevo. ',
+    'does_not_exist' => 'Category does not exist.',
+    'assoc_users'	 => 'This category is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this category and try again. ',
 
     'create' => array(
-        'error'   => 'La categoría no fue creada, por favor inténtelo de nuevo.',
-        'success' => 'Categoría creada exitosamente.'
+        'error'   => 'Category was not created, please try again.',
+        'success' => 'Category created successfully.'
     ),
 
     'update' => array(
-        'error'   => 'La categoría no se actualizó, por favor, inténtelo de nuevo',
-        'success' => 'Categoría actualizada exitosamente.',
-        'cannot_change_category_type'   => 'No puede cambiar el tipo de categoría una vez que se ha creado',
+        'error'   => 'Category was not updated, please try again',
+        'success' => 'Category updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'                => '¿Está seguro de que desea eliminar esta categoría?',
-        'error'                  => 'Hubo un problema eliminando la categoría. Inténtelo de nuevo.',
-        'success'                => 'Categoría eliminada correctamente.',
-        'bulk_success'           => 'Categorías eliminadas correctamente.',
-        'partial_success'        => 'Categoría eliminada correctamente. Ver información adicional a continuación. | :count categorías eliminadas correctamente. Ver información adicional a continuación.',
+        'confirm'   => 'Are you sure you wish to delete this category?',
+        'error'   => 'There was an issue deleting the category. Please try again.',
+        'success' => 'The category was deleted successfully.'
     )
 
 );

@@ -1,21 +1,17 @@
 <?php
 
     return [
-        'not_found'                    => 'Tillgångsunderhållet du letade efter kunde inte hittas!',
+        'not_found'                    => 'Asset Maintenance you were looking for was not found!',
         'delete'                       => [
-            'confirm' => 'År du säker på att du vill radera tillgångsunderhållet?',
-            'error'   => 'Ett fel uppstod vid radering av tillgångsunderhåll. Vänligen försök igen.',
-            'success' => 'Tillgångsunderhåll raderat.',
+            'confirm' => 'Are you sure you wish to delete this asset maintenance?',
+            'error'   => 'There was an issue deleting the asset maintenance. Please try again.',
+            'success' => 'The asset maintenance was deleted successfully.'
         ],
         'create'                       => [
-            'error'   => 'Tillgångsunderhållet kunde inte skapas. Vänligen försök igen.',
-            'success' => 'Tillgångsunderhåll skapat.',
+            'error'   => 'Asset Maintenance was not created, please try again.',
+            'success' => 'Asset Maintenance created successfully.'
         ],
-        'edit'                       => [
-            'error'   => 'Tillgångsunderhållet kunde inte redigeras. Vänligen försök igen.',
-            'success' => 'Tillgångsunderhåll redigerat.',
-        ],
-        'asset_maintenance_incomplete' => 'Inte färdigställt ännu',
-        'warranty'                     => 'Garanti',
-        'not_warranty'                 => 'Ej garanti',
+        'asset_maintenance_incomplete' => 'Not Completed Yet',
+        'warranty'                     => 'Warranty',
+        'not_warranty'                 => 'Not Warranty',
     ];

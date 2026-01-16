@@ -11,6 +11,7 @@ class AddLicenseNameToLicenses extends Migration
      */
     public function up()
     {
+
     }
 
     /**
@@ -22,4 +23,5 @@ class AddLicenseNameToLicenses extends Migration
     {
         //
     }
+
 }

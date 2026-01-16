@@ -10,6 +10,7 @@
  * bundled with this package in the LICENSE file.  It is also available at
  * the following URL: http://www.opensource.org/licenses/BSD-3-Clause
  *
+ * @package    Sentry
  * @version    2.0.0
  * @author     Cartalyst LLC
  * @license    BSD License (3-clause)
@@ -19,33 +20,33 @@
 
 use Illuminate\Database\Migrations\Migration;
 
-class MigrationCartalystSentryInstallGroups extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
-    {
-        Schema::create('permission_groups', function ($table) {
-            $table->increments('id');
-            $table->string('name');
-            $table->text('permissions')->nullable();
-            $table->timestamps();
-            $table->engine = 'InnoDB';
-        });
-    }
+class MigrationCartalystSentryInstallGroups extends Migration {
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        // See 2014_11_04_231416_update_group_field_for_reporting.php and 2019_06_12_184327_rename_groups_table.php
-        Schema::dropIfExists('permission_groups');
-        Schema::dropIfExists('groups');
-    }
+	/**
+	 * Run the migrations.
+	 *
+	 * @return void
+	 */
+	public function up()
+	{
+		Schema::create('groups', function($table)
+		{
+			$table->increments('id');
+			$table->string('name');
+			$table->text('permissions')->nullable();
+			$table->timestamps();
+			$table->engine = 'InnoDB';
+		});
+	}
+
+	/**
+	 * Reverse the migrations.
+	 *
+	 * @return void
+	 */
+	public function down()
+	{
+		Schema::drop('groups');
+	}
+
 }

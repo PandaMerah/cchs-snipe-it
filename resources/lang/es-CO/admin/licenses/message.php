@@ -2,57 +2,49 @@
 
 return array(
 
-    'does_not_exist' => 'La licencia no existe o no tiene permiso para verla.',
-    'user_does_not_exist' => 'El usuario no existe o no tiene permiso para verlos.',
-    'asset_does_not_exist' 	=> 'El activo que intenta asociar con esta licencia no existe.',
-    'owner_doesnt_match_asset' => 'El activo que está intentando asignar con esta licencia está asignado a un usuario diferente al de la persona seleccionada de la lista.',
-    'assoc_users'	 => 'Esta licencia está actualmente asignada a un usuario y no puede ser eliminada. Por favor, reciba primero la licencia y vuelva a intentarlo. ',
-    'select_asset_or_person' => 'Debe seleccionar un activo o un usuario, pero no ambos.',
-    'not_found' => 'Licencia no encontrada',
-    'seats_available' => ':seat_count disponibles',
+    'does_not_exist' => 'License does not exist.',
+    'user_does_not_exist' => 'User does not exist.',
+    'asset_does_not_exist' 	=> 'The asset you are trying to associate with this license does not exist.',
+    'owner_doesnt_match_asset' => 'The asset you are trying to associate with this license is owned by somene other than the person selected in the assigned to dropdown.',
+    'assoc_users'	 => 'This license is currently checked out to a user and cannot be deleted. Please check the license in first, and then try deleting again. ',
 
 
     'create' => array(
-        'error'   => 'La licencia no fue creada, por favor inténtelo de nuevo.',
-        'success' => 'Categoría creada correctamente.'
+        'error'   => 'License was not created, please try again.',
+        'success' => 'License created successfully.'
     ),
 
     'deletefile' => array(
-        'error'   => 'Archivo no eliminado. Por favor, vuelva a intentarlo.',
-        'success' => 'Archivo eliminado correctamente.',
+        'error'   => 'File not deleted. Please try again.',
+        'success' => 'File successfully deleted.',
     ),
 
     'upload' => array(
-        'error'   => 'Archivo(s) no cargado(s). Por favor, inténtelo de nuevo.',
-        'success' => 'Archivo(s) cargados correctamente.',
-        'nofiles' => 'No seleccionó ningún archivo para ser cargado, o el archivo que seleccionó es demasiado grande',
-        'invalidfiles' => 'Uno o más de sus archivos es demasiado grande o es un tipo de archivo que no está permitido. Los tipos de archivo permitidos son png, gif, jpg, jpeg, doc, docx, pdf, txt, zip, rar, rtf, xml y lic.',
+        'error'   => 'File(s) not uploaded. Please try again.',
+        'success' => 'File(s) successfully uploaded.',
+        'nofiles' => 'You did not select any files for upload, or the file you are trying to upload is too large',
+        'invalidfiles' => 'One or more of your files is too large or is a filetype that is not allowed. Allowed filetypes are png, gif, jpg, doc, docx, pdf, and txt.',
     ),
 
     'update' => array(
-        'error'   => 'La licencia no fue actualizada, por favor inténtelo de nuevo',
-        'success' => 'Licencia actualizada correctamente.'
+        'error'   => 'License was not updated, please try again',
+        'success' => 'License updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => '¿Está seguro de que desea eliminar esta licencia?',
-        'error'   => 'Hubo un problema al eliminar la licencia. Por favor, inténtelo de nuevo.',
-        'success' => 'La licencia se ha eliminado correctamente.'
+        'confirm'   => 'Are you sure you wish to delete this license?',
+        'error'   => 'There was an issue deleting the license. Please try again.',
+        'success' => 'The license was deleted successfully.'
     ),
 
     'checkout' => array(
-        'error'   => 'Hubo un problema asignando la licencia. Por favor, inténtelo de nuevo.',
-        'success' => 'La licencia fue asignada con éxito',
-        'not_enough_seats' => 'No hay suficientes licencias disponibles para asignar',
-        'mismatch' => 'La licencia proporcionada no coincide con la licencia seleccionada',
-        'unavailable' => 'Esta licencia no está disponible para ser asignada.',
-        'license_is_inactive' => 'Licencia caducada o cancelada.',
+        'error'   => 'There was an issue checking out the license. Please try again.',
+        'success' => 'The license was checked out successfully'
     ),
 
     'checkin' => array(
-        'error'   => 'Hubo un problema ingresando la licencia. Por favor, inténtelo de nuevo.',
-        'not_reassignable' => 'El asiento ha sido usado.',
-        'success' => 'La licencia fue ingresada correctamente'
+        'error'   => 'There was an issue checking in the license. Please try again.',
+        'success' => 'The license was checked in successfully'
     ),
 
 );

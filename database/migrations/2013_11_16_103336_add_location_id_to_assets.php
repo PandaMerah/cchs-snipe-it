@@ -25,4 +25,5 @@ class AddLocationIdToAssets extends Migration
     {
         //
     }
+
 }

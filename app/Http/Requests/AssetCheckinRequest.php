@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Request;
+
 class AssetCheckinRequest extends Request
 {
     /**
@@ -21,14 +23,9 @@ class AssetCheckinRequest extends Request
      */
     public function rules()
     {
-        $settings = \App\Models\Setting::getSettings();
+        return [
 
-        $rules = [];
-
-            if($settings->require_checkinout_notes) {
-            $rules['note'] = 'string|required';
-        }
-        return $rules;
+        ];
     }
 
     public function response(array $errors)

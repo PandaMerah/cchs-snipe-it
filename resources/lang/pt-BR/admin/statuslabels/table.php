@@ -1,19 +1,15 @@
 <?php
 
 return array(
-    'about'      	=> 'About Status Types',
+    'about'      	=> 'Sobre os Rótulos de Status',
     'archived'      	=> 'Arquivado',
-    'create'      	=> 'Criar Rótulo de Situação',
-    'color'      	=> 'Cor do Gráfico',
-    'default_label' => 'Etiqueta padrão',
-    'default_label_help' => 'Isso é usado para garantir que seus rótulos de situação usados ​​com mais frequência apareçam na parte superior da caixa de seleção ao criar / editar ativos.',
+    'create'      	=> 'Criar Rótulo de Status',
     'deployable'      	=> 'Implementável',
-    'info'      	=> 'Status label types are used to describe the various states your assets could be in. They may be out for repair, lost/stolen, etc. You can create new status labels for your deployable, pending and archived assets according to your own workflow. For more information, <a href="https://snipe-it.readme.io/docs/overview#status-labels" target="_blank">see the documentation <i class="fa fa-external-link"></i></a>.',
-    'name'      	=> 'Nome da Situação',
+    'info'      	=> 'Rótulos de status são usados para descrever os vários estados que seus ativos podem estar. Eles podem ser fora do ar para reparo, perdido/roubado, etc. Você pode criar novos rótulos de status para ativos implementáveis, pendentes e arquivados.',
+    'name'      	=> 'Nome do Status',
     'pending'      	=> 'Pendente',
-    'status_type'   => 'Tipo de Situação',
-    'show_in_nav'   => 'Mostrar na barra lateral de navegação',
-    'title'      	=> 'Rótulos de Situação',
+    'status_type'   => 'Tipo do Status',
+    'title'      	=> 'Rótulos de Status',
     'undeployable'  => 'Não implementável',
-    'update'      	=> 'Atualizar Rótulo de Situação',
+    'update'      	=> 'Atualizar Rótulo de Status',
 );

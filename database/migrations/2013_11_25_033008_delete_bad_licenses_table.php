@@ -23,4 +23,5 @@ class DeleteBadLicensesTable extends Migration
     {
         //
     }
+
 }

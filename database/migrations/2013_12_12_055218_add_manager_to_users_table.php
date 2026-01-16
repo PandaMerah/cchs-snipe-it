@@ -12,7 +12,8 @@ class AddManagerToUsersTable extends Migration
     public function up()
     {
         Schema::table('users', function ($table) {
-            $table->integer('manager_id')->nullable()->default(null);
+            $table->integer('manager_id')->nullable()->default(NULL);
+
         });
     }
 
@@ -27,4 +28,5 @@ class AddManagerToUsersTable extends Migration
             $table->dropColumn('manager_id');
         });
     }
+
 }

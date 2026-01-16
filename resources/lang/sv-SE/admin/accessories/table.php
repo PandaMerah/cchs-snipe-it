@@ -1,9 +1,11 @@
 <?php
 
 return array(
-	'dl_csv'      				=> 'Ladda ned CSV',
+	'dl_csv'      				=> 'Download CSV',
 	'eula_text'      			=> 'EULA',
     'id'      					=> 'ID',
-    'require_acceptance'      	=> 'Godkännande',
-    'title'      				=> 'Tillbehörsnamn',
+    'require_acceptance'      	=> 'Acceptance',
+    'title'      				=> 'Accessory Name',
+
+
 );

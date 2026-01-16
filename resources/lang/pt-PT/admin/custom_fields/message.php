@@ -5,7 +5,6 @@ return array(
     'field' => array(
         'invalid'   => 'Esse campo não existe.',
         'already_added'   => 'Campo já adicionado',
-        'none_selected'   => 'Nenhum campo selecionado',
 
         'create' => array(
             'error'   => 'Campo não criado. Por favor tente novamente.',
@@ -29,7 +28,7 @@ return array(
 
     'fieldset' => array(
 
-        'does_not_exist' => 'Fieldset não existe',
+
 
         'create' => array(
             'error'   => 'O Conjunto de campos não foi criado, por favor tente novamente.',
@@ -47,12 +46,6 @@ return array(
             'success' => 'O conjunto de campos foi eliminado com sucesso.',
             'in_use'   => 'Conjunto de campos continua em uso.',
         )
-
-    ),
-
-    'fieldset_default_value' => array(
-
-        'error' => 'Erro ao validar valores padrão do conjunto de campos.',
 
     ),
 

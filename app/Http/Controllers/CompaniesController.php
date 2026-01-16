@@ -1,160 +1,90 @@
-<?php
+<?php namespace App\Http\Controllers;
 
-namespace App\Http\Controllers;
-
-use App\Http\Requests\ImageUploadRequest;
 use App\Models\Company;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\RedirectResponse;
-use \Illuminate\Contracts\View\View;
+use Input;
+use Lang;
+use Redirect;
+use View;
 
-/**
- * This controller handles all actions related to Companies for
- * the Snipe-IT Asset Management application.
- *
- * @version    v1.0
- */
 final class CompaniesController extends Controller
 {
-    /**
-     * Returns view to display listing of companies.
-     *
-     * @author [Abdullah Alansari] [<ahimta@gmail.com>]
-     * @since [v1.8]
-     */
-    public function index() : View
+    public function getIndex()
     {
-        $this->authorize('view', Company::class);
-
-        return view('companies/index');
+        return View::make('companies/index')->with('companies', Company::all());
     }
 
-    /**
-     * Returns view to create a new company.
-     *
-     * @author [Abdullah Alansari] [<ahimta@gmail.com>]
-     * @since [v1.8]
-     */
-    public function create() : View
+    public function getCreate()
     {
-        $this->authorize('create', Company::class);
-
-        return view('companies/edit')->with('item', new Company);
+        return View::make('companies/edit')->with('company', new Company);
     }
 
-    /**
-     * Save data from new company form.
-     *
-     * @author [Abdullah Alansari] [<ahimta@gmail.com>]
-     * @since [v1.8]
-     * @param Request $request
-     */
-    public function store(ImageUploadRequest $request) : RedirectResponse
+    public function postCreate()
     {
-        $this->authorize('create', Company::class);
-
         $company = new Company;
-        $company->name = $request->input('name');
-        $company->phone = $request->input('phone');
-        $company->fax = $request->input('fax');
-        $company->email = $request->input('email');
-        $company->tag_color = $request->input('tag_color');
-        $company->notes = $request->input('notes');
-        $company->created_by = auth()->id();
 
-        $company = $request->handleImages($company);
+            $company->name = e(Input::get('name'));
 
         if ($company->save()) {
-            return redirect()->route('companies.index')
-                ->with('success', trans('admin/companies/message.create.success'));
+            return Redirect::to('admin/settings/companies')
+                ->with('success', Lang::get('admin/companies/message.create.success'));
+        } else {
+            return Redirect::back()->withInput()->withErrors($company->getErrors());
         }
 
-        return redirect()->back()->withInput()->withErrors($company->getErrors());
     }
 
-    /**
-     * Return form to edit existing company.
-     *
-     * @author [Abdullah Alansari] [<ahimta@gmail.com>]
-     * @since [v1.8]
-     * @param int $companyId
-     */
-    public function edit(Company $company) : View | RedirectResponse
+    public function getEdit($companyId)
     {
-        $this->authorize('update', $company);
-        return view('companies/edit')->with('item', $company);
-    }
-
-    /**
-     * Save data from edit company form.
-     *
-     * @author [Abdullah Alansari] [<ahimta@gmail.com>]
-     * @since [v1.8]
-     * @param ImageUploadRequest $request
-     * @param int $companyId
-     */
-    public function update(ImageUploadRequest $request, Company $company) : RedirectResponse
-    {
-
-        $this->authorize('update', $company);
-        $company->name = $request->input('name');
-        $company->phone = $request->input('phone');
-        $company->fax = $request->input('fax');
-        $company->email = $request->input('email');
-        $company->tag_color = $request->input('tag_color');
-        $company->notes = $request->input('notes');
-
-        $company = $request->handleImages($company);
-
-        if ($company->save()) {
-            return redirect()->route('companies.index')
-                ->with('success', trans('admin/companies/message.update.success'));
-        }
-
-        return redirect()->back()->withInput()->withErrors($company->getErrors());
-    }
-
-    /**
-     * Delete company
-     *
-     * @author [Abdullah Alansari] [<ahimta@gmail.com>]
-     * @since [v1.8]
-     * @param int $companyId
-     */
-    public function destroy($companyId) : RedirectResponse
-    {
-
         if (is_null($company = Company::find($companyId))) {
-            return redirect()->route('companies.index')
-                ->with('error', trans('admin/companies/message.not_found'));
+            return Redirect::to('admin/settings/companies')
+                ->with('error', Lang::get('admin/companies/message.does_not_exist'));
+        } else {
+            return View::make('companies/edit')->with('company', $company);
         }
+    }
+
+    public function postEdit($companyId)
+    {
+        if (is_null($company = Company::find($companyId))) {
+            return Redirect::to('admin/settings/companies')->with('error', Lang::get('admin/companies/message.does_not_exist'));
+        } else {
 
 
-        $this->authorize('delete', $company);
-        if (! $company->isDeletable()) {
-            return redirect()->route('companies.index')
-                    ->with('error', trans('admin/companies/message.assoc_users'));
+            $company->name = e(Input::get('name'));
+
+            if ($company->save()) {
+                return Redirect::to('admin/settings/companies')
+                    ->with('success', Lang::get('admin/companies/message.update.success'));
+            } else {
+                return Redirect::to("admin/settings/companies/$companyId/edit")
+                    ->with('error', Lang::get('admin/companies/message.update.error'));
+            }
+
         }
+    }
 
-        if ($company->image) {
+    public function postDelete($companyId)
+    {
+        if (is_null($company = Company::find($companyId))) {
+            return Redirect::to('admin/settings/companies')
+                ->with('error', Lang::get('admin/companies/message.not_found'));
+        } else {
             try {
-                Storage::disk('public')->delete('companies'.'/'.$company->image);
-            } catch (\Exception $e) {
-                Log::debug($e);
+                $company->delete();
+                return Redirect::to('admin/settings/companies')
+                    ->with('success', Lang::get('admin/companies/message.delete.success'));
+            } catch (\Illuminate\Database\QueryException $exception) {
+            /*
+                 * NOTE: This happens when there's a foreign key constraint violation
+                 * For example when rows in other tables are referencing this company
+                 */
+                if ($exception->getCode() == 23000) {
+                    return Redirect::to('admin/settings/companies')
+                        ->with('error', Lang::get('admin/companies/message.assoc_users'));
+                } else {
+                    throw $exception;
+                }
             }
         }
-
-        $company->delete();
-
-        return redirect()->route('companies.index')
-            ->with('success', trans('admin/companies/message.delete.success'));
-    }
-
-    public function show(Company $company) : View | RedirectResponse
-    {
-        $this->authorize('view', Company::class);
-        return view('companies/view')->with('company', $company);
     }
 }

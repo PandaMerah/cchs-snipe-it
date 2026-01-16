@@ -14,6 +14,7 @@ class AddDepreciateToAssets extends Migration
         //
         Schema::table('assets', function ($table) {
             $table->boolean('depreciate')->nullable();
+
         });
     }
 
@@ -27,5 +28,9 @@ class AddDepreciateToAssets extends Migration
         Schema::table('assets', function ($table) {
             $table->dropColumn('depreciate');
         });
+
+
+
     }
+
 }

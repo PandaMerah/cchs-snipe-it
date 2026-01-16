@@ -2,36 +2,34 @@
 
 return array(
 
-    'does_not_exist' => '组件不存在。',
+    'does_not_exist' => 'Component does not exist.',
 
     'create' => array(
-        'error'   => '新增组件失败，请重试。',
-        'success' => '新增组件成功。'
+        'error'   => 'Component was not created, please try again.',
+        'success' => 'Component created successfully.'
     ),
 
     'update' => array(
-        'error'   => '更新组件失败，请重试。',
-        'success' => '更新成功。'
+        'error'   => 'Component was not updated, please try again',
+        'success' => 'Component updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => '你确定要删除这个组件吗？',
-        'error'   => '删除组件出错，请重试。',
-        'success' => '删除组件成功。',
-        'error_qty'   => '此类型的某些组件仍然被签出。请归还它们，然后重试。',
+        'confirm'   => 'Are you sure you wish to delete this component?',
+        'error'   => 'There was an issue deleting the component. Please try again.',
+        'success' => 'The component was deleted successfully.'
     ),
 
      'checkout' => array(
-        'error'   		=> '签出组件失败，请重试。',
-        'success' 		=> '签出组件成功。',
-        'user_does_not_exist' => '无效用户，请重试。',
-        'unavailable'      => '还没有足够的组件: :remaining 件剩余, :requested 件需求 ',
+        'error'   		=> 'Component was not checked out, please try again',
+        'success' 		=> 'Component checked out successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     ),
 
     'checkin' => array(
-        'error'   		=> '归还组件失败，请重试。',
-        'success' 		=> '归还组件成功。',
-        'user_does_not_exist' => '无效用户，请重试。'
+        'error'   		=> 'Component was not checked in, please try again',
+        'success' 		=> 'Component checked in successfully.',
+        'user_does_not_exist' => 'That user is invalid. Please try again.'
     )
 
 

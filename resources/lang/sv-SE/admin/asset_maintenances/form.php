@@ -1,15 +1,14 @@
 <?php
 
     return [
-        'select_type'            => 'Select Maintenance Type',
-        'asset_maintenance_type' => 'Typ av tillgångsunderhåll',
+        'asset_maintenance_type' => 'Maintenance Type',
         'title'                  => 'Titel',
-        'start_date'             => 'Startdatum',
-        'completion_date'        => 'Datum för slutförande',
-        'cost'                   => 'Inköpspris',
-        'is_warranty'            => 'Förbättring av garanti',
-        'asset_maintenance_time' => 'Tillgångens underhållstid (i dagar)',
+        'start_date'             => 'Startad',
+        'completion_date'        => 'Slutförd',
+        'cost'                   => 'Kostnad',
+        'is_warranty'            => 'Warranty Improvement',
+        'asset_maintenance_time' => 'Dagar',
         'notes'                  => 'Anteckningar',
-        'update'                 => 'Uppdatera tillgångsunderhåll',
-        'create'                 => 'Skapa tillgångsunderhåll'
+        'update'                 => 'Uppdatera',
+        'create'                 => 'Skapa'
     ];

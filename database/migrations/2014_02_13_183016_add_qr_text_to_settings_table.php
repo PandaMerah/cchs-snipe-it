@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 class AddQrTextToSettingsTable extends Migration
 {
@@ -13,7 +13,7 @@ class AddQrTextToSettingsTable extends Migration
     public function up()
     {
         Schema::table('settings', function (Blueprint $table) {
-            $table->string('qr_text', 32)->nullable()->default(null);
+            $table->string('qr_text', 32)->nullable()->default(NULL);
         });
     }
 
@@ -28,4 +28,5 @@ class AddQrTextToSettingsTable extends Migration
             $table->dropColumn('qr_text');
         });
     }
+
 }

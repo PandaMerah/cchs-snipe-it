@@ -11,11 +11,13 @@ class AddNullableToLicensesTable extends Migration
      */
     public function up()
     {
-        Schema::table('licenses', function ($table) {
-            $table->string('order_number', 50)->nullable()->change();
-            $table->string('notes', 255)->nullable()->change();
-            $table->string('license_name', 120)->nullable()->change();
-        });
+      Schema::table('licenses', function ($table) {
+        $table->string('order_number',50)->nullable()->change();
+        $table->string('notes',255)->nullable()->change();
+        $table->string('license_name',120)->nullable()->change();
+      });
+
+
     }
 
     /**
@@ -27,4 +29,5 @@ class AddNullableToLicensesTable extends Migration
     {
         //
     }
+
 }

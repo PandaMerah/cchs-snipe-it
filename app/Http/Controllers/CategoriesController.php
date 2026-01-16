@@ -1,199 +1,326 @@
-<?php
+<?php namespace App\Http\Controllers;
 
-namespace App\Http\Controllers;
-
-use App\Actions\Categories\DestroyCategoryAction;
-use App\Exceptions\ItemStillHasAccessories;
-use App\Exceptions\ItemStillHasAssetModels;
-use App\Exceptions\ItemStillHasAssets;
-use App\Exceptions\ItemStillHasChildren;
-use App\Exceptions\ItemStillHasComponents;
-use App\Exceptions\ItemStillHasConsumables;
-use App\Exceptions\ItemStillHasLicenses;
 use App\Helpers\Helper;
-use App\Http\Requests\ImageUploadRequest;
-use App\Models\Category;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\RedirectResponse;
-use \Illuminate\Contracts\View\View;
+use App\Models\Category as Category;
+use App\Models\Company;
+use App\Models\Setting;
+use Auth;
+use DB;
+use Input;
+use Lang;
+use Redirect;
+use Str;
+use View;
 
-/**
- * This class controls all actions related to Categories for
- * the Snipe-IT Asset Management application.
- *
- * @version    v1.0
- * @author [A. Gianotto] [<snipe@snipe.net>]
- */
 class CategoriesController extends Controller
 {
     /**
-     * Returns a view that invokes the ajax tables which actually contains
-     * the content for the categories listing, which is generated in getDatatable.
+     * Show a list of all the categories.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see CategoriesController::getDatatable() method that generates the JSON response
-     * @since [v1.0]
+     * @return View
      */
-    public function index() : View
+
+    public function getIndex()
     {
         // Show the page
-        $this->authorize('view', Category::class);
-
-        return view('categories/index');
+        return View::make('categories/index');
     }
 
+
     /**
-     * Returns a form view to create a new category.
+     * Category create.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see CategoriesController::store() method that stores the data
-     * @since [v1.0]
+     * @return View
      */
-    public function create() : View
+    public function getCreate()
     {
         // Show the page
-        $this->authorize('create', Category::class);
-
-        return view('categories/edit')->with('item', new Category)
-            ->with('category_types', Helper::categoryTypeList());
+         $category_types= Helper::categoryTypeList();
+        return View::make('categories/edit')->with('category', new Category)
+        ->with('category_types', $category_types);
     }
 
+
     /**
-     * Validates and stores the new category data.
+     * Category create form processing.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see CategoriesController::create() method that makes the form.
-     * @since [v1.0]
-     * @param ImageUploadRequest $request
+     * @return Redirect
      */
-    public function store(ImageUploadRequest $request) : RedirectResponse
+    public function postCreate()
     {
-        $this->authorize('create', Category::class);
+
+        // create a new model instance
         $category = new Category();
-        $category->name = $request->input('name');
-        $category->category_type = $request->input('category_type');
-        $category->eula_text = $request->input('eula_text');
-        $category->use_default_eula = $request->input('use_default_eula', '0');
-        $category->require_acceptance = $request->input('require_acceptance', '0');
-        $category->alert_on_response = $request->input('alert_on_response', '0');
-        $category->checkin_email = $request->input('checkin_email', '0');
-        $category->tag_color  = $request->input('tag_color');
-        $category->notes = $request->input('notes');
-        $category->created_by = auth()->id();
 
-        $category = $request->handleImages($category);
-        if ($category->save()) {
-            return redirect()->route('categories.index')->with('success', trans('admin/categories/message.create.success'));
-        }
-
-        return redirect()->back()->withInput()->withErrors($category->getErrors());
-    }
-
-    /**
-     * Returns a view that makes a form to update a category.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see CategoriesController::postEdit() method saves the data
-     * @param int $categoryId
-     * @since [v1.0]
-     */
-    public function edit(Category $category) : RedirectResponse | View
-    {
-        $this->authorize('update', Category::class);
-        return view('categories/edit')->with('item', $category)
-        ->with('category_types', Helper::categoryTypeList());
-    }
-
-    /**
-     * Validates and stores the updated category data.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see CategoriesController::getEdit() method that makes the form.
-     * @param ImageUploadRequest $request
-     * @param int $categoryId
-     * @since [v1.0]
-     */
-    public function update(ImageUploadRequest $request, Category $category) : RedirectResponse
-    {
-        $this->authorize('update', Category::class);
-        $category->name = $request->input('name');
-
-        // Don't allow the user to change the category_type once it's been created
-        if (($request->filled('category_type') && ($category->itemCount() > 0))) {
-            $request->validate(['category_type' => 'in:'.$category->category_type]);
-        }
-        
-        $category->category_type = $request->input('category_type', $category->category_type);
-
-        $category->fill($request->all());
-
-        $category->eula_text = $request->input('eula_text');
-        $category->use_default_eula = $request->input('use_default_eula', '0');
-        $category->require_acceptance = $request->input('require_acceptance', '0');
-        $category->alert_on_response = $request->input('alert_on_response', '0');
-        $category->checkin_email = $request->input('checkin_email', '0');
-        $category->tag_color  = $request->input('tag_color');
-        $category->notes = $request->input('notes');
-
-        $category = $request->handleImages($category);
+        // Update the category data
+        $category->name                 = e(Input::get('name'));
+        $category->category_type        = e(Input::get('category_type'));
+        $category->eula_text            = e(Input::get('eula_text'));
+        $category->use_default_eula     = e(Input::get('use_default_eula', '0'));
+        $category->require_acceptance   = e(Input::get('require_acceptance', '0'));
+        $category->checkin_email        = e(Input::get('checkin_email', '0'));
+        $category->user_id              = Auth::user()->id;
 
         if ($category->save()) {
-            // Redirect to the new category page
-            return redirect()->route('categories.index')->with('success', trans('admin/categories/message.update.success'));
+        // Redirect to the new category  page
+            return Redirect::to("admin/settings/categories")->with('success', Lang::get('admin/categories/message.create.success'));
+        } else {
+
+          // The given data did not pass validation
+            return Redirect::back()->withInput()->withErrors($category->getErrors());
+
         }
-        // The given data did not pass validation
-        return redirect()->back()->withInput()->withErrors($category->getErrors());
+
+        // Redirect to the category create page
+        return Redirect::to('admin/settings/categories/create')->with('error', Lang::get('admin/categories/message.create.error'));
+
+
     }
 
     /**
-     * Validates and marks a category as deleted.
+     * Category update.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     * @param int $categoryId
+     * @param  int  $categoryId
+     * @return View
      */
-    public function destroy(Category $category): RedirectResponse
+    public function getEdit($categoryId = null)
     {
-        $this->authorize('delete', Category::class);
-        try {
-            DestroyCategoryAction::run($category);
-        } catch (ItemStillHasChildren $e) {
-            return redirect()->route('categories.index')->with('error', trans('general.bulk_delete_associations.general_assoc_warning', ['item' => trans('general.category')]));
-        } catch (\Exception $e) {
-            report($e);
-            return redirect()->route('categories.index')->with('error', trans('admin/categories/message.delete.error'));
+        // Check if the category exists
+        if (is_null($category = Category::find($categoryId))) {
+            // Redirect to the blogs management page
+            return Redirect::to('admin/settings/categories')->with('error', Lang::get('admin/categories/message.does_not_exist'));
         }
 
-        return redirect()->route('categories.index')->with('success', trans('admin/categories/message.delete.success'));
+        // Show the page
+        //$category_options = array('' => 'Top Level') + Category::lists('name', 'id');
+
+        $category_options = array('' => 'Top Level') + DB::table('categories')->where('id', '!=', $categoryId)->lists('name', 'id');
+        $category_types= Helper::categoryTypeList();
+
+        return View::make('categories/edit', compact('category'))
+        ->with('category_options', $category_options)
+        ->with('category_types', $category_types);
+    }
+
+
+    /**
+     * Category update form processing page.
+     *
+     * @param  int  $categoryId
+     * @return Redirect
+     */
+    public function postEdit($categoryId = null)
+    {
+        // Check if the blog post exists
+        if (is_null($category = Category::find($categoryId))) {
+            // Redirect to the blogs management page
+            return Redirect::to('admin/categories')->with('error', Lang::get('admin/categories/message.does_not_exist'));
+        }
+
+        // Update the category data
+        $category->name            = e(Input::get('name'));
+        $category->category_type        = e(Input::get('category_type'));
+        $category->eula_text            = e(Input::get('eula_text'));
+        $category->use_default_eula     = e(Input::get('use_default_eula', '0'));
+        $category->require_acceptance   = e(Input::get('require_acceptance', '0'));
+        $category->checkin_email        = e(Input::get('checkin_email', '0'));
+
+        if ($category->save()) {
+        // Redirect to the new category page
+            return Redirect::to("admin/settings/categories")->with('success', Lang::get('admin/categories/message.update.success'));
+        } // attempt validation
+        else {
+          // The given data did not pass validation
+            return Redirect::back()->withInput()->withErrors($category->getErrors());
+        }
+
+        // Redirect to the category management page
+        return Redirect::back()->with('error', Lang::get('admin/categories/message.update.error'));
+
     }
 
     /**
-     * Returns a view that invokes the ajax tables which actually contains
-     * the content for the categories detail view, which is generated in getDataView.
+     * Delete the given category.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see CategoriesController::getDataView() method that generates the JSON response
-     * @param $id
-     * @since [v1.8]
+     * @param  int  $categoryId
+     * @return Redirect
      */
-    public function show(Category $category) : View | RedirectResponse
+    public function getDelete($categoryId)
     {
-        $this->authorize('view', Category::class);
+        // Check if the category exists
+        if (is_null($category = Category::find($categoryId))) {
+            // Redirect to the blogs management page
+            return Redirect::to('admin/settings/categories')->with('error', Lang::get('admin/categories/message.not_found'));
+        }
 
-            if ($category->category_type == 'asset') {
-                $category_type = 'hardware';
-                $category_type_route = 'assets';
-            } elseif ($category->category_type == 'accessory') {
-                $category_type = 'accessories';
-                $category_type_route = 'accessories';
-            } else {
-                $category_type = $category->category_type;
-                $category_type_route = $category->category_type.'s';
+
+        if ($category->has_models() > 0) {
+
+            // Redirect to the asset management page
+            return Redirect::to('admin/settings/categories')->with('error', Lang::get('admin/categories/message.assoc_users'));
+        } else {
+
+            $category->delete();
+
+            // Redirect to the locations management page
+            return Redirect::to('admin/settings/categories')->with('success', Lang::get('admin/categories/message.delete.success'));
+        }
+
+
+    }
+
+
+
+    /**
+    *  Get the asset information to present to the category view page
+    *
+    * @param  int  $assetId
+    * @return View
+    **/
+    public function getView($categoryID = null)
+    {
+        $category = Category::find($categoryID);
+
+        if (isset($category->id)) {
+                return View::make('categories/view', compact('category'));
+        } else {
+            // Prepare the error message
+            $error = Lang::get('admin/categories/message.does_not_exist', compact('id'));
+
+            // Redirect to the user management page
+            return Redirect::route('categories')->with('error', $error);
+        }
+
+
+    }
+
+    public function getDatatable()
+    {
+        // Grab all the categories
+        $categories = Category::with('assets', 'accessories', 'consumables');
+
+        if (Input::has('search')) {
+            $categories = $categories->TextSearch(e(Input::get('search')));
+        }
+
+        if (Input::has('offset')) {
+            $offset = e(Input::get('offset'));
+        } else {
+            $offset = 0;
+        }
+
+        if (Input::has('limit')) {
+            $limit = e(Input::get('limit'));
+        } else {
+            $limit = 50;
+        }
+
+
+        $allowed_columns = ['id','name','category_type'];
+        $order = Input::get('order') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array(Input::get('sort'), $allowed_columns) ? Input::get('sort') : 'created_at';
+
+        $categories = $categories->orderBy($sort, $order);
+
+        $catCount = $categories->count();
+        $categories = $categories->skip($offset)->take($limit)->get();
+
+        $rows = array();
+
+        foreach ($categories as $category) {
+            $actions = '<a href="'.route('update/category', $category->id).'" class="btn btn-warning btn-sm" style="margin-right:5px;"><i class="fa fa-pencil icon-white"></i></a><a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/category', $category->id).'" data-content="'.Lang::get('admin/categories/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($category->name).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';
+            $rows[] = array(
+                'id'      => $category->id,
+                'name'  => (string)link_to('/admin/settings/categories/'.$category->id.'/view', $category->name) ,
+                'category_type' => ucwords($category->category_type),
+                'count'         => $category->assets->count(),
+                'acceptance'    => ($category->require_acceptance=='1') ? '<i class="fa fa-check"></i>' : '',
+                //EULA is still not working correctly
+                'eula'          => ($category->getEula()) ? '<i class="fa fa-check"></i>' : '',
+                'actions'       => $actions
+            );
+        }
+
+        $data = array('total' => $catCount, 'rows' => $rows);
+
+        return $data;
+    }
+
+    public function getDataView($categoryID)
+    {
+
+        $category = Category::find($categoryID);
+
+        if ($category->category_type =='asset') {
+            $category_assets = $category->assets;
+        } elseif ($category->category_type =='accessory') {
+            $category_assets = $category->accessories;
+        } elseif ($category->category_type =='consumable') {
+            $category_assets = $category->consumables;
+        } elseif ($category->category_type =='component') {
+            $category_assets = $category->components;
+        }
+
+
+        if (Input::has('search')) {
+            $category_assets = $category_assets->TextSearch(e(Input::get('search')));
+        }
+
+        if (Input::has('offset')) {
+            $offset = e(Input::get('offset'));
+        } else {
+            $offset = 0;
+        }
+
+        if (Input::has('limit')) {
+            $limit = e(Input::get('limit'));
+        } else {
+            $limit = 50;
+        }
+
+        $order = Input::get('order') === 'asc' ? 'asc' : 'desc';
+
+        $allowed_columns = ['id','name','serial','asset_tag'];
+        $sort = in_array(Input::get('sort'), $allowed_columns) ? Input::get('sort') : 'created_at';
+        $count = $category_assets->count();
+
+        $rows = array();
+
+        foreach ($category_assets as $asset) {
+
+            $actions = '';
+            $inout='';
+
+            if ($asset->deleted_at=='') {
+                $actions = '<div style=" white-space: nowrap;"><a href="'.route('clone/hardware', $asset->id).'" class="btn btn-info btn-sm" title="Clone asset"><i class="fa fa-files-o"></i></a> <a href="'.route('update/hardware', $asset->id).'" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a> <a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/hardware', $asset->id).'" data-content="'.Lang::get('admin/hardware/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($asset->asset_tag).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a></div>';
+            } elseif ($asset->deleted_at!='') {
+                $actions = '<a href="'.route('restore/hardware', $asset->id).'" class="btn btn-warning btn-sm"><i class="fa fa-recycle icon-white"></i></a>';
             }
 
-            return view('categories/view', compact('category'))
-                ->with('category_type', $category_type)
-                ->with('category_type_route', $category_type_route);
+            if ($asset->assetstatus) {
+                if ($asset->assetstatus->deployable != 0) {
+                    if (($asset->assigned_to !='') && ($asset->assigned_to > 0)) {
+                        $inout = '<a href="'.route('checkin/hardware', $asset->id).'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
+                    } else {
+                        $inout = '<a href="'.route('checkout/hardware', $asset->id).'" class="btn btn-info btn-sm">'.Lang::get('general.checkout').'</a>';
+                    }
+                }
+            }
+
+            $rows[] = array(
+            'id' => $asset->id,
+            'name' => (string)link_to('/hardware/'.$asset->id.'/view', $asset->name),
+            //'model' => $asset->model->name,
+            'asset_tag' => $asset->asset_tag,
+            'serial' => $asset->serial,
+            'assigned_to' => ($asset->assigneduser) ? (string)link_to(config('app.url').'/admin/users/'.$asset->assigneduser->id.'/view', $asset->assigneduser->fullName()): '',
+            'change' => $inout,
+            'actions' => $actions,
+            'companyName' => Company::getName($asset),
+            );
+        }
+
+        $data = array('total' => $count, 'rows' => $rows);
+        return $data;
     }
 }

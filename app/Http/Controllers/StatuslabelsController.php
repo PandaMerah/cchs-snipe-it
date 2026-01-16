@@ -1,156 +1,263 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Helpers\Helper;
+use Input;
+use Lang;
 use App\Models\Statuslabel;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\RedirectResponse;
-use \Illuminate\Contracts\View\View;
+use Redirect;
+use DB;
+use App\Models\Setting;
+use Str;
+use View;
+use App\Helpers\Helper;
+use Auth;
 
-/**
- * This controller handles all actions related to Status Labels for
- * the Snipe-IT Asset Management application.
- *
- * @version    v1.0
- */
+use Symfony\Component\HttpFoundation\JsonResponse;
+
 class StatuslabelsController extends Controller
 {
     /**
      * Show a list of all the statuslabels.
+     *
+     * @return View
      */
-    public function index() : View
+
+    public function getIndex()
     {
-        $this->authorize('view', Statuslabel::class);
-        return view('statuslabels.index');
+        // Show the page
+        return View::make('statuslabels/index', compact('statuslabels'));
     }
 
-    public function show(Statuslabel $statuslabel) : View | RedirectResponse
-    {
-        $this->authorize('view', Statuslabel::class);
-        return view('statuslabels.view')->with('statuslabel', $statuslabel);
-    }
 
     /**
      * Statuslabel create.
      *
+     * @return View
      */
-    public function create() : View
+    public function getCreate()
     {
         // Show the page
-        $this->authorize('create', Statuslabel::class);
+        $statuslabel = new Statuslabel;
+        $use_statuslabel_type = $statuslabel->getStatuslabelType();
+        $statuslabel_types = Helper::statusTypeList();
 
-        return view('statuslabels/edit')
-            ->with('item', new Statuslabel)
-            ->with('statuslabel_types', Helper::statusTypeList());
+        return View::make('statuslabels/edit', compact('statuslabel_types', 'statuslabel'))->with('use_statuslabel_type', $use_statuslabel_type);
     }
+
 
     /**
      * Statuslabel create form processing.
      *
-     * @param Request $request
+     * @return Redirect
      */
-    public function store(Request $request) : RedirectResponse
+    public function postCreate()
     {
-        $this->authorize('create', Statuslabel::class);
+
         // create a new model instance
-        $statusLabel = new Statuslabel();
-
-        if ($request->missing('statuslabel_types')) {
-            return redirect()->back()->withInput()->withErrors(['statuslabel_types' => trans('validation.statuslabel_type')]);
-        }
-
-        $statusType = Statuslabel::getStatuslabelTypesForDB($request->input('statuslabel_types'));
+        $statuslabel = new Statuslabel();
+        $statustype = Statuslabel::getStatuslabelTypesForDB(Input::get('statuslabel_types'));
 
         // Save the Statuslabel data
-        $statusLabel->name = $request->input('name');
-        $statusLabel->created_by = auth()->id();
-        $statusLabel->notes = $request->input('notes');
-        $statusLabel->deployable = $statusType['deployable'];
-        $statusLabel->pending = $statusType['pending'];
-        $statusLabel->archived = $statusType['archived'];
-        $statusLabel->color = $request->input('color');
-        $statusLabel->show_in_nav = $request->input('show_in_nav', 0);
-        $statusLabel->default_label = $request->input('default_label', 0);
+        $statuslabel->name              = e(Input::get('name'));
+        $statuslabel->user_id          = Auth::user()->id;
+        $statuslabel->notes          =  e(Input::get('notes'));
+        $statuslabel->deployable          =  $statustype['deployable'];
+        $statuslabel->pending          =  $statustype['pending'];
+        $statuslabel->archived          =  $statustype['archived'];
 
-        if ($statusLabel->save()) {
+
+        // Was the asset created?
+        if ($statuslabel->save()) {
             // Redirect to the new Statuslabel  page
-            return redirect()->route('statuslabels.index')->with('success', trans('admin/statuslabels/message.create.success'));
+            return Redirect::to("admin/settings/statuslabels")->with('success', Lang::get('admin/statuslabels/message.create.success'));
         }
 
-        return redirect()->back()->withInput()->withErrors($statusLabel->getErrors());
+        return Redirect::back()->withInput()->withErrors($statuslabel->getErrors());
+
     }
+
+    public function store()
+    {
+
+      // create a new model instance
+        $statuslabel = new Statuslabel();
+        $statustype = Statuslabel::getStatuslabelTypesForDB(Input::get('modal-statuslabel_types'));
+
+      // attempt validation
+        if ($statuslabel->validate($new)) {
+
+            // Save the Statuslabel data
+            $statuslabel->name            = e(Input::get('name'));
+            $statuslabel->user_id         = Auth::user()->id;
+            $statuslabel->notes           =  '';
+            $statuslabel->deployable      =  $statustype['deployable'];
+            $statuslabel->pending         =  $statustype['pending'];
+            $statuslabel->archived        =  $statustype['archived'];
+
+            // Was the asset created?
+            if ($statuslabel->save()) {
+                // Redirect to the new Statuslabel  page
+                return JsonResponse::create($statuslabel);
+            } else {
+                return JsonResponse::create(["error" => "Couldn't save Statuslabel"], 500);
+            }
+        } else {
+            // failure
+            $errors = $statuslabel->getErrors();
+            return  JsonResponse::create(["error" => "Failed validation: ".print_r($errors->all('<li>:message</li>'), true)], 500);
+        }
+    }
+
 
     /**
      * Statuslabel update.
      *
-     * @param  int $statuslabelId
+     * @param  int  $statuslabelId
+     * @return View
      */
-    public function edit(Statuslabel $statuslabel) : View | RedirectResponse
+    public function getEdit($statuslabelId = null)
     {
-        $this->authorize('update', Statuslabel::class);
+        // Check if the Statuslabel exists
+        if (is_null($statuslabel = Statuslabel::find($statuslabelId))) {
+            // Redirect to the blogs management page
+            return Redirect::to('admin/settings/statuslabels')->with('error', Lang::get('admin/statuslabels/message.does_not_exist'));
+        }
 
-        $statuslabel_types = ['' => trans('admin/hardware/form.select_statustype')] + ['undeployable' => trans('admin/hardware/general.undeployable')] + ['pending' => trans('admin/hardware/general.pending')] + ['archived' => trans('admin/hardware/general.archived')] + ['deployable' => trans('admin/hardware/general.deployable')];
+        $use_statuslabel_type = $statuslabel->getStatuslabelType();
 
-        return view('statuslabels/edit', compact('statuslabel_types'))
-            ->with('item', $statuslabel)
-            ->with('use_statuslabel_type', $statuslabel);
+        $statuslabel_types = array('' => Lang::get('admin/hardware/form.select_statustype')) + array('undeployable' => Lang::get('admin/hardware/general.undeployable')) + array('pending' => Lang::get('admin/hardware/general.pending')) + array('archived' => Lang::get('admin/hardware/general.archived')) + array('deployable' => Lang::get('admin/hardware/general.deployable'));
+
+        return View::make('statuslabels/edit', compact('statuslabel', 'statuslabel_types'))->with('use_statuslabel_type', $use_statuslabel_type);
     }
+
 
     /**
      * Statuslabel update form processing page.
      *
-     * @param  int $statuslabelId
+     * @param  int  $statuslabelId
+     * @return Redirect
      */
-    public function update(Request $request, Statuslabel $statuslabel) : RedirectResponse
+    public function postEdit($statuslabelId = null)
     {
-        $this->authorize('update', Statuslabel::class);
-
-        if (! $request->filled('statuslabel_types')) {
-            return redirect()->back()->withInput()->withErrors(['statuslabel_types' => trans('validation.statuslabel_type')]);
+        // Check if the Statuslabel exists
+        if (is_null($statuslabel = Statuslabel::find($statuslabelId))) {
+            // Redirect to the blogs management page
+            return Redirect::to('admin/settings/statuslabels')->with('error', Lang::get('admin/statuslabels/message.does_not_exist'));
         }
 
+
         // Update the Statuslabel data
-        $statustype = Statuslabel::getStatuslabelTypesForDB($request->input('statuslabel_types'));
-        $statuslabel->name = $request->input('name');
-        $statuslabel->notes = $request->input('notes');
-        $statuslabel->deployable = $statustype['deployable'];
-        $statuslabel->pending = $statustype['pending'];
-        $statuslabel->archived = $statustype['archived'];
-        $statuslabel->color = $request->input('color');
-        $statuslabel->show_in_nav = $request->input('show_in_nav', 0);
-        $statuslabel->default_label = $request->input('default_label', 0);
+        $statustype = Statuslabel::getStatuslabelTypesForDB(Input::get('statuslabel_types'));
+        $statuslabel->name              = e(Input::get('name'));
+        $statuslabel->notes          =  e(Input::get('notes'));
+        $statuslabel->deployable          =  $statustype['deployable'];
+        $statuslabel->pending          =  $statustype['pending'];
+        $statuslabel->archived          =  $statustype['archived'];
+
 
         // Was the asset created?
         if ($statuslabel->save()) {
             // Redirect to the saved Statuslabel page
-            return redirect()->route('statuslabels.index')->with('success', trans('admin/statuslabels/message.update.success'));
+            return Redirect::to("admin/settings/statuslabels/")->with('success', Lang::get('admin/statuslabels/message.update.success'));
+        } else {
+            return Redirect::back()->withInput()->withErrors($statuslabel->getErrors());
         }
 
-        return redirect()->back()->withInput()->withErrors($statuslabel->getErrors());
+
+        // Redirect to the Statuslabel management page
+        return Redirect::to("admin/settings/statuslabels/$statuslabelId/edit")->with('error', Lang::get('admin/statuslabels/message.update.error'));
+
     }
 
     /**
      * Delete the given Statuslabel.
      *
-     * @param  int $statuslabelId
+     * @param  int  $statuslabelId
+     * @return Redirect
      */
-    public function destroy($statuslabelId) : RedirectResponse
+    public function getDelete($statuslabelId)
     {
-        $this->authorize('delete', Statuslabel::class);
         // Check if the Statuslabel exists
         if (is_null($statuslabel = Statuslabel::find($statuslabelId))) {
-            return redirect()->route('statuslabels.index')->with('error', trans('admin/statuslabels/message.not_found'));
+            // Redirect to the blogs management page
+            return Redirect::to('admin/settings/statuslabels')->with('error', Lang::get('admin/statuslabels/message.not_found'));
         }
 
-        // Check that there are no assets associated
-        if ($statuslabel->assets()->count() == 0) {
+
+        if ($statuslabel->has_assets() > 0) {
+
+            // Redirect to the asset management page
+            return Redirect::to('admin/settings/statuslabels')->with('error', Lang::get('admin/statuslabels/message.assoc_users'));
+        } else {
+
             $statuslabel->delete();
 
-            return redirect()->route('statuslabels.index')->with('success', trans('admin/statuslabels/message.delete.success'));
+            // Redirect to the statuslabels management page
+            return Redirect::to('admin/settings/statuslabels')->with('success', Lang::get('admin/statuslabels/message.delete.success'));
         }
 
-        return redirect()->route('statuslabels.index')->with('error', trans('admin/statuslabels/message.assoc_assets'));
+
+
+    }
+
+
+    public function getDatatable()
+    {
+        $statuslabels = Statuslabel::select(array('id','name','deployable','pending','archived'))
+        ->whereNull('deleted_at');
+
+        if (Input::has('search')) {
+            $statuslabels = $statuslabels->TextSearch(e(Input::get('search')));
+        }
+
+        if (Input::has('offset')) {
+            $offset = e(Input::get('offset'));
+        } else {
+            $offset = 0;
+        }
+
+        if (Input::has('limit')) {
+            $limit = e(Input::get('limit'));
+        } else {
+            $limit = 50;
+        }
+
+        $allowed_columns = ['id','name'];
+        $order = Input::get('order') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array(Input::get('sort'), $allowed_columns) ? Input::get('sort') : 'created_at';
+
+        $statuslabels->orderBy($sort, $order);
+
+        $statuslabelsCount = $statuslabels->count();
+        $statuslabels = $statuslabels->skip($offset)->take($limit)->get();
+
+        $rows = array();
+
+        foreach ($statuslabels as $statuslabel) {
+
+            if ($statuslabel->deployable == 1) {
+                $label_type = Lang::get('admin/statuslabels/table.deployable');
+            } elseif ($statuslabel->pending == 1) {
+                $label_type = Lang::get('admin/statuslabels/table.pending');
+            } elseif ($statuslabel->archived == 1) {
+                $label_type = Lang::get('admin/statuslabels/table.archived');
+            } else {
+                $label_type = Lang::get('admin/statuslabels/table.undeployable');
+            }
+
+            $actions = '<a href="'.route('update/statuslabel', $statuslabel->id).'" class="btn btn-warning btn-sm" style="margin-right:5px;"><i class="fa fa-pencil icon-white"></i></a><a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/statuslabel', $statuslabel->id).'" data-content="'.Lang::get('admin/statuslabels/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($statuslabel->name).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';
+
+            $rows[] = array(
+                'id'            => $statuslabel->id,
+                'type'          => $label_type,
+                'name'          => e($statuslabel->name),
+                'actions'       => $actions
+            );
+        }
+
+        $data = array('total' => $statuslabelsCount, 'rows' => $rows);
+
+        return $data;
+
     }
 }

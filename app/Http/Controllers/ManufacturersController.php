@@ -1,240 +1,288 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Actions\Manufacturers\DeleteManufacturerAction;
-use App\Exceptions\ItemStillHasAccessories;
-use App\Exceptions\ItemStillHasAssets;
-use App\Exceptions\ItemStillHasChildren;
-use App\Exceptions\ItemStillHasComponents;
-use App\Exceptions\ItemStillHasConsumables;
-use App\Exceptions\ItemStillHasLicenses;
-use App\Helpers\Helper;
-use App\Http\Requests\ImageUploadRequest;
-use App\Models\Actionlog;
+use App\Models\Company;
+use Input;
+use Lang;
 use App\Models\Manufacturer;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Http\RedirectResponse;
-use \Illuminate\Contracts\View\View;
+use Redirect;
+use App\Models\Setting;
+use Str;
+use View;
+use Auth;
 
-/**
- * This controller handles all actions related to Manufacturers for
- * the Snipe-IT Asset Management application.
- *
- * @version    v1.0
- */
 class ManufacturersController extends Controller
 {
     /**
-     * Returns a view that invokes the ajax tables which actually contains
-     * the content for the manufacturers listing, which is generated in getDatatable.
+     * Show a list of all manufacturers
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see Api\ManufacturersController::index() method that generates the JSON response
-     * @since [v1.0]
+     * @return View
      */
-    public function index() : View
+    public function getIndex()
     {
-        $this->authorize('index', Manufacturer::class);
-        $manufacturer_count = Manufacturer::withTrashed()->count();
-        return view('manufacturers/index')->with('manufacturer_count', $manufacturer_count);
+        // Show the page
+        return View::make('manufacturers/index', compact('manufacturers'));
     }
 
+
     /**
-     * Returns a view that invokes the ajax tables which actually contains
-     * the content for the manufacturers listing, which is generated in getDatatable.
+     * Manufacturer create.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see Api\ManufacturersController::index() method that generates the JSON response
-     * @since [v1.0]
+     * @return View
      */
-    public function seed() : RedirectResponse
+    public function getCreate()
     {
-        $this->authorize('index', Manufacturer::class);
-
-        $manufacturers_count = Manufacturer::withTrashed()->count();
-
-        if ($manufacturers_count == 0) {
-            Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\ManufacturerSeeder', '--force' => true]);
-            return redirect()->route('manufacturers.index')->with('success', trans('general.seeding.manufacturers.success'));
-        }
-
-        return redirect()->route('manufacturers.index')->with('error', trans_choice('general.seeding.manufacturers.error', ['count' => $manufacturers_count]));
+        return View::make('manufacturers/edit')->with('manufacturer', new Manufacturer);
     }
 
-    /**
-     * Returns a view that displays a form to create a new manufacturer.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see ManufacturersController::store()
-     * @since [v1.0]
-     */
-    public function create() : View
-    {
-        $this->authorize('create', Manufacturer::class);
-
-        return view('manufacturers/edit')->with('item', new Manufacturer);
-    }
 
     /**
-     * Validates and stores the data for a new manufacturer.
+     * Manufacturer create form processing.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see ManufacturersController::create()
-     * @since [v1.0]
-     * @param ImageUploadRequest $request
+     * @return Redirect
      */
-    public function store(ImageUploadRequest $request) : RedirectResponse
+    public function postCreate()
     {
-        $this->authorize('create', Manufacturer::class);
+
+        // Create a new manufacturer
         $manufacturer = new Manufacturer;
-        $manufacturer->name = $request->input('name');
-        $manufacturer->created_by = auth()->id();
-        $manufacturer->url = $request->input('url');
-        $manufacturer->support_url = $request->input('support_url');
-        $manufacturer->warranty_lookup_url = $request->input('warranty_lookup_url');
-        $manufacturer->support_phone = $request->input('support_phone');
-        $manufacturer->support_email = $request->input('support_email');
-        $manufacturer->notes = $request->input('notes');
-        $manufacturer = $request->handleImages($manufacturer);
-        $manufacturer->tag_color  = $request->input('tag_color');
+        $manufacturer->name            = e(Input::get('name'));
+        $manufacturer->user_id          = Auth::user()->id;
 
+        // Was it created?
         if ($manufacturer->save()) {
-            return redirect()->route('manufacturers.index')->with('success', trans('admin/manufacturers/message.create.success'));
+            return Redirect::to("admin/settings/manufacturers")->with('success', Lang::get('admin/manufacturers/message.create.success'));
         }
 
-        return redirect()->back()->withInput()->withErrors($manufacturer->getErrors());
+        return Redirect::back()->withInput()->withErrors($manufacturer->getErrors());
+
     }
 
     /**
-     * Returns a view that displays a form to edit a manufacturer.
+     * Manufacturer update.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see ManufacturersController::update()
-     * @param int $manufacturerId
-     * @since [v1.0]
+     * @param  int  $manufacturerId
+     * @return View
      */
-    public function edit(Manufacturer $manufacturer) : View | RedirectResponse
+    public function getEdit($manufacturerId = null)
     {
-        $this->authorize('update', Manufacturer::class);
-        return view('manufacturers/edit')->with('item', $manufacturer);
-    }
-
-    /**
-     * Validates and stores the updated manufacturer data.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @see ManufacturersController::getEdit()
-     * @param Request $request
-     * @param int $manufacturerId
-     * @since [v1.0]
-     */
-    public function update(ImageUploadRequest $request, Manufacturer $manufacturer) : RedirectResponse
-    {
-        $this->authorize('update', Manufacturer::class);
-
-        $manufacturer->name = $request->input('name');
-        $manufacturer->url = $request->input('url');
-        $manufacturer->support_url = $request->input('support_url');
-        $manufacturer->warranty_lookup_url = $request->input('warranty_lookup_url');
-        $manufacturer->support_phone = $request->input('support_phone');
-        $manufacturer->support_email = $request->input('support_email');
-        $manufacturer->tag_color  = $request->input('tag_color');
-        $manufacturer->notes = $request->input('notes');
-
-        // Set the model's image property to null if the image is being deleted
-        if ($request->input('image_delete') == 1) {
-            $manufacturer->image = null;
+        // Check if the manufacturer exists
+        if (is_null($manufacturer = Manufacturer::find($manufacturerId))) {
+            // Redirect to the manufacturer  page
+            return Redirect::to('admin/settings/manufacturers')->with('error', Lang::get('admin/manufacturers/message.does_not_exist'));
         }
 
-        $manufacturer = $request->handleImages($manufacturer);
+        // Show the page
+        return View::make('manufacturers/edit', compact('manufacturer'));
+    }
 
+
+    /**
+     * Manufacturer update form processing page.
+     *
+     * @param  int  $manufacturerId
+     * @return Redirect
+     */
+    public function postEdit($manufacturerId = null)
+    {
+        // Check if the manufacturer exists
+        if (is_null($manufacturer = Manufacturer::find($manufacturerId))) {
+            // Redirect to the manufacturer  page
+            return Redirect::to('admin/settings/manufacturers')->with('error', Lang::get('admin/manufacturers/message.does_not_exist'));
+        }
+
+        // Save the  data
+        $manufacturer->name     = e(Input::get('name'));
+
+        // Was it created?
         if ($manufacturer->save()) {
-            return redirect()->route('manufacturers.index')->with('success', trans('admin/manufacturers/message.update.success'));
+            // Redirect to the new manufacturer page
+            return Redirect::to("admin/settings/manufacturers")->with('success', Lang::get('admin/manufacturers/message.update.success'));
         }
 
-        return redirect()->back()->withInput()->withErrors($manufacturer->getErrors());
+        return Redirect::back()->withInput()->withErrors($manufacturer->getErrors());
+
+
     }
 
     /**
-     * Deletes a manufacturer.
+     * Delete the given manufacturer.
      *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @param int $manufacturerId
-     * @since [v1.0]
+     * @param  int  $manufacturerId
+     * @return Redirect
      */
-    public function destroy(Manufacturer $manufacturer): RedirectResponse
+    public function getDelete($manufacturerId)
     {
-        $this->authorize('delete', $manufacturer);
-        try {
-            DeleteManufacturerAction::run($manufacturer);
-        } catch (ItemStillHasChildren $e) {
-            return redirect()->route('manufacturers.index')->with('error', trans('general.bulk_delete_associations.general_assoc_warning', ['item' => trans('general.manufacturer')]));
-        } catch (\Exception $e) {
-            report($e);
-            return redirect()->route('manufacturers.index')->with('error', trans('general.something_went_wrong'));
+        // Check if the manufacturer exists
+        if (is_null($manufacturer = Manufacturer::find($manufacturerId))) {
+            // Redirect to the manufacturers page
+            return Redirect::to('admin/settings/manufacturers')->with('error', Lang::get('admin/manufacturers/message.not_found'));
         }
 
-        return redirect()->route('manufacturers.index')->with('success', trans('admin/manufacturers/message.delete.success'));
+        if ($manufacturer->has_models() > 0) {
+
+            // Redirect to the asset management page
+            return Redirect::to('admin/settings/manufacturers')->with('error', Lang::get('admin/manufacturers/message.assoc_users'));
+        } else {
+
+            // Delete the manufacturer
+            $manufacturer->delete();
+
+            // Redirect to the manufacturers management page
+            return Redirect::to('admin/settings/manufacturers')->with('success', Lang::get('admin/manufacturers/message.delete.success'));
+        }
+
+
+
+
+
+
     }
 
+
+
     /**
-     * Returns a view that invokes the ajax tables which actually contains
-     * the content for the manufacturers detail listing, which is generated via API.
-     * This data contains a listing of all assets that belong to that manufacturer.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @param int $manufacturerId
-     * @since [v1.0]
-     */
-    public function show(Manufacturer $manufacturer) : View | RedirectResponse
+    *  Get the asset information to present to the category view page
+    *
+    * @param  int  $assetId
+    * @return View
+    **/
+    public function getView($manufacturerID = null)
     {
-        $this->authorize('view', Manufacturer::class);
-        return view('manufacturers/view', compact('manufacturer'));
+        $manufacturer = Manufacturer::find($manufacturerID);
+
+        if (isset($manufacturer->id)) {
+                return View::make('manufacturers/view', compact('manufacturer'));
+        } else {
+            // Prepare the error message
+            $error = Lang::get('admin/manufacturers/message.does_not_exist', compact('id'));
+
+            // Redirect to the user management page
+            return Redirect::route('manufacturers')->with('error', $error);
+        }
+
+
     }
 
-    /**
-     * Restore a given Manufacturer (mark as un-deleted)
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v4.1.15]
-     * @param int $manufacturers_id
-     */
-    public function restore($id) : RedirectResponse
+    public function getDatatable()
     {
-        $this->authorize('delete', Manufacturer::class);
+        $manufacturers = Manufacturer::select(array('id','name'))->with('assets')
+        ->whereNull('deleted_at');
 
-        if ($manufacturer = Manufacturer::withTrashed()->find($id)) {
+        if (Input::has('search')) {
+            $manufacturers = $manufacturers->TextSearch(e(Input::get('search')));
+        }
 
-            if ($manufacturer->deleted_at == '') {
-                return redirect()->back()->with('error', trans('general.not_deleted', ['item_type' => trans('general.manufacturer')]));
+        if (Input::has('offset')) {
+            $offset = e(Input::get('offset'));
+        } else {
+            $offset = 0;
+        }
+
+        if (Input::has('limit')) {
+            $limit = e(Input::get('limit'));
+        } else {
+            $limit = 50;
+        }
+
+        $allowed_columns = ['id','name'];
+        $order = Input::get('order') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array(Input::get('sort'), $allowed_columns) ? Input::get('sort') : 'created_at';
+
+        $manufacturers->orderBy($sort, $order);
+
+        $manufacturersCount = $manufacturers->count();
+        $manufacturers = $manufacturers->skip($offset)->take($limit)->get();
+
+        $rows = array();
+
+        foreach ($manufacturers as $manufacturer) {
+            $actions = '<a href="'.route('update/manufacturer', $manufacturer->id).'" class="btn btn-warning btn-sm" style="margin-right:5px;"><i class="fa fa-pencil icon-white"></i></a><a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/manufacturer', $manufacturer->id).'" data-content="'.Lang::get('admin/manufacturers/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($manufacturer->name).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a>';
+
+            $rows[] = array(
+                'id'              => $manufacturer->id,
+                'name'          => (string)link_to('admin/settings/manufacturers/'.$manufacturer->id.'/view', $manufacturer->name),
+                'assets'              => $manufacturer->assets->count(),
+                'actions'       => $actions
+            );
+        }
+
+        $data = array('total' => $manufacturersCount, 'rows' => $rows);
+
+        return $data;
+
+    }
+
+
+
+    public function getDataView($manufacturerID)
+    {
+
+        $manufacturer = Manufacturer::with('assets.company')->find($manufacturerID);
+        $manufacturer_assets = $manufacturer->assets;
+
+        if (Input::has('search')) {
+            $manufacturer_assets = $manufacturer_assets->TextSearch(e(Input::get('search')));
+        }
+
+        if (Input::has('offset')) {
+            $offset = e(Input::get('offset'));
+        } else {
+            $offset = 0;
+        }
+
+        if (Input::has('limit')) {
+            $limit = e(Input::get('limit'));
+        } else {
+            $limit = 50;
+        }
+
+        $order = Input::get('order') === 'asc' ? 'asc' : 'desc';
+
+        $allowed_columns = ['id','name','serial','asset_tag'];
+        $sort = in_array(Input::get('sort'), $allowed_columns) ? Input::get('sort') : 'created_at';
+        $count = $manufacturer_assets->count();
+
+        $rows = array();
+
+        foreach ($manufacturer_assets as $asset) {
+
+            $actions = '';
+            if ($asset->deleted_at=='') {
+                $actions = '<div style=" white-space: nowrap;"><a href="'.route('clone/hardware', $asset->id).'" class="btn btn-info btn-sm" title="Clone asset"><i class="fa fa-files-o"></i></a> <a href="'.route('update/hardware', $asset->id).'" class="btn btn-warning btn-sm"><i class="fa fa-pencil icon-white"></i></a> <a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/hardware', $asset->id).'" data-content="'.Lang::get('admin/hardware/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($asset->asset_tag).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a></div>';
+            } elseif ($asset->deleted_at!='') {
+                $actions = '<a href="'.route('restore/hardware', $asset->id).'" class="btn btn-warning btn-sm"><i class="fa fa-recycle icon-white"></i></a>';
             }
 
-            if ($manufacturer->restore()) {
-                $logaction = new Actionlog();
-                $logaction->item_type = Manufacturer::class;
-                $logaction->item_id = $manufacturer->id;
-                $logaction->created_at = date('Y-m-d H:i:s');
-                $logaction->created_by = auth()->id();
-                $logaction->logaction('restore');
-
-                // Redirect them to the deleted page if there are more, otherwise the section index
-                $deleted_manufacturers = Manufacturer::onlyTrashed()->count();
-                if ($deleted_manufacturers > 0) {
-                    return redirect()->back()->with('success', trans('admin/manufacturers/message.success.restored'));
+            if ($asset->assetstatus) {
+                if ($asset->assetstatus->deployable != 0) {
+                    if (($asset->assigned_to !='') && ($asset->assigned_to > 0)) {
+                        $inout = '<a href="'.route('checkin/hardware', $asset->id).'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
+                    } else {
+                        $inout = '<a href="'.route('checkout/hardware', $asset->id).'" class="btn btn-info btn-sm">'.Lang::get('general.checkout').'</a>';
+                    }
                 }
-                return redirect()->route('manufacturers.index')->with('success', trans('admin/manufacturers/message.restore.success'));
             }
 
-            // Check validation to make sure we're not restoring an asset with the same asset tag (or unique attribute) as an existing asset
-            return redirect()->back()->with('error', trans('general.could_not_restore', ['item_type' => trans('general.manufacturer'), 'error' => $manufacturer->getErrors()->first()]));
+            $row = array(
+            'id' => $asset->id,
+            'name' => (string)link_to('/hardware/'.$asset->id.'/view', $asset->showAssetName()),
+            'model' => $asset->model->name,
+            'asset_tag' => $asset->asset_tag,
+            'serial' => $asset->serial,
+            'assigned_to' => ($asset->assigneduser) ? (string)link_to('/admin/users/'.$asset->assigneduser->id.'/view', $asset->assigneduser->fullName()): '',
+            'actions' => $actions,
+            'companyName' => Company::getName($asset),
+            );
+
+            if (isset($inout)) {
+                $row['change'] = $inout;
+            }
+
+            $rows[] = $row;
         }
 
-        return redirect()->route('manufacturers.index')->with('error', trans('admin/manufacturers/message.does_not_exist'));
-
+        $data = array('total' => $count, 'rows' => $rows);
+        return $data;
     }
 }

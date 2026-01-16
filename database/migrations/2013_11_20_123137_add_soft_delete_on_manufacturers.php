@@ -25,4 +25,5 @@ class AddSoftDeleteOnManufacturers extends Migration
     {
         //
     }
+
 }

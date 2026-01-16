@@ -2,24 +2,24 @@
 
 return array(
 
-    'does_not_exist' => 'La clase de depreciación no existe.',
-    'assoc_users'	 => 'Esta depreciación está actualmente asociada con uno o más modelos y no puede ser eliminada. Por favor, elimine los modelos y luego intente borrarlas de nuevo. ',
+    'does_not_exist' => 'Depreciation class does not exist.',
+    'assoc_users'	 => 'This depreciation is currently associated with one or more models and cannot be deleted. Please delete the models, and then try deleting again. ',
 
 
     'create' => array(
-        'error'   => 'El tipo de depreciación no fue creado, por favor, inténtelo de nuevo. :(',
-        'success' => 'La clase de depreciación fue creada con éxito. :)'
+        'error'   => 'Depreciation class was not created, please try again. :(',
+        'success' => 'Depreciation class created successfully. :)'
     ),
 
     'update' => array(
-        'error'   => 'El tipo de depreciación no fue actualizado, por favor, inténtelo de nuevo',
-        'success' => 'La clase de depreciación fue creada con éxito.'
+        'error'   => 'Depreciation class was not updated, please try again',
+        'success' => 'Depreciation class updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => '¿Está seguro de que desea eliminar esta clase de depreciación?',
-        'error'   => 'Ha sucedido un error eliminando el tipo de depreciación, por favor intente de nuevo.',
-        'success' => 'La clase de depreciación fue eliminada con éxito.'
+        'confirm'   => 'Are you sure you wish to delete this depreciation class?',
+        'error'   => 'There was an issue deleting the depreciation class. Please try again.',
+        'success' => 'The depreciation class was deleted successfully.'
     )
 
 );

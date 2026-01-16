@@ -14,6 +14,7 @@ class AddFilenameToAssetLog extends Migration
         //
         Schema::table('asset_logs', function ($table) {
             $table->text('filename')->nullable();
+
         });
     }
 
@@ -29,4 +30,5 @@ class AddFilenameToAssetLog extends Migration
             $table->dropColumn('filename');
         });
     }
+
 }

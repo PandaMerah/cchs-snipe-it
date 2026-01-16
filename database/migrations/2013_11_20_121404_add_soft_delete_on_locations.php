@@ -25,4 +25,5 @@ class AddSoftDeleteOnLocations extends Migration
     {
         //
     }
+
 }

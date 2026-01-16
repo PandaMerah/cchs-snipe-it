@@ -25,4 +25,5 @@ class DropParentFromCategories extends Migration
     {
         //
     }
+
 }

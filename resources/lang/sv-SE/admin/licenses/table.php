@@ -2,17 +2,16 @@
 
 return array(
 
-    'assigned_to'   	=> 'Tilldelad till',
-    'checkout'   		=> 'In/ut',
-    'deleted_at'        => 'Borttagen',
+    'assigned_to'   	=> 'Assigned To',
+    'checkout'   		=> 'In/Out',
     'id'      			=> 'ID',
-    'license_email'   	=> 'Licens E-post',
-    'license_name'   	=> 'Licensierad till',
-    'purchase_date'   	=> 'Inköpsdatum',
-    'purchased'   		=> 'Inköpt',
-    'seats'   			=> 'Säten',
-    'hardware'   		=> 'Hårdvara',
-    'serial'   			=> 'Serienummer',
-    'title'      		=> 'Licens',
+    'license_email'   	=> 'License Email',
+    'license_name'   	=> 'Licensed To',
+    'purchase_date'   	=> 'Purchase Date',
+    'purchased'   		=> 'Purchased',
+    'seats'   			=> 'Seats',
+    'hardware'   		=> 'Hardware',
+    'serial'   			=> 'Serial',
+    'title'      		=> 'License',
 
 );

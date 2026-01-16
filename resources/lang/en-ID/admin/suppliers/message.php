@@ -2,27 +2,23 @@
 
 return array(
 
-    'deleted' => 'Deleted supplier',
-    'does_not_exist' => 'Pemasok tidak ada.',
-
+    'does_not_exist' => 'Supplier does not exist.',
+    'assoc_users'	 => 'This supplier is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this supplier and try again. ',
 
     'create' => array(
-        'error'   => 'Pemasok belum dibuat, silahkan coba lagi.',
-        'success' => 'Pemasok berhasil dibuat.'
+        'error'   => 'Supplier was not created, please try again.',
+        'success' => 'Supplier created successfully.'
     ),
 
     'update' => array(
-        'error'   => 'Pemasok tidak diperbarui, silakan coba lagi',
-        'success' => 'Pemasok berhasil diperbarui.'
+        'error'   => 'Supplier was not updated, please try again',
+        'success' => 'Supplier updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Yakin ingin menghapus pemasok ini?',
-        'error'   => 'Terjadi masalah saat menghapus pemasok. Silahkan coba lagi.',
-        'success' => 'Pemasok berhasil dihapus.',
-        'not_found'               => 'Supplier not found.',
-        'bulk_success'            => 'Suppliers were deleted successfully.',
-        'partial_success'        => 'Supplier deleted successfully. See additional information below. | :count suppliers were deleted successfully. See additional information below.',
+        'confirm'   => 'Are you sure you wish to delete this supplier?',
+        'error'   => 'There was an issue deleting the supplier. Please try again.',
+        'success' => 'Supplier was deleted successfully.'
     )
 
 );

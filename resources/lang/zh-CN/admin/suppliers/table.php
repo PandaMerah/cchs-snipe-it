@@ -1,8 +1,6 @@
 <?php
 
 return array(
-    'about_suppliers_title' => '关于供应商',
-    'about_suppliers_text'  => '供应商用来跟踪物品的来源',
     'address'               => '供应商地址',
     'assets'                => '资产',
     'city'                  => '城市',
@@ -19,6 +17,7 @@ return array(
     'state'                 => '省份',
     'suppliers'             => '供应商',
     'update'                => '更新供货商',
+    'url'                   => '网址',
     'view'                  => '查看供应商',
     'view_assets_for'       => '查看资产关于',
     'zip'                   => '邮政编码',

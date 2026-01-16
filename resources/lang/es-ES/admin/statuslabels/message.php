@@ -1,32 +1,25 @@
 <?php
 
-return [
+return array(
 
-    'does_not_exist' => 'Etiqueta de estado no existe.',
-    'deleted_label' => 'Etiqueta de estado borrado',
-    'assoc_assets'	 => 'Esta etiqueta de estado está actualmente asociada con al menos un activo y no se puede eliminar. Por favor actualice sus activos para que ya no hagan referencia a este estado e inténtelo de nuevo. ',
+    'does_not_exist' => 'Localización no existente.',
+    'assoc_users'	 => 'Localización asociada con al menos un usuario, no puede eliminarse. Actualize los usuarios para que no la usen e intente de nuevo. ',
 
-    'create' => [
-        'error'   => 'La etiqueta de estado no pudo ser creada, por favor inténtelo de nuevo.',
-        'success' => 'Etiqueta de estado fue creada exitosamente.',
-    ],
 
-    'update' => [
-        'error'   => 'La etiqueta de estado no se actualizó, por favor inténtelo de nuevo',
-        'success' => 'La etiqueta de estado fue actualizada exitosamente.',
-    ],
+    'create' => array(
+        'error'   => 'Localización no creada, por favor intete de nuevo.',
+        'success' => 'Localización creada correctamente.'
+    ),
 
-    'delete' => [
-        'confirm'   => '¿Está seguro de que desea eliminar esta etiqueta de estado?',
-        'error'   => 'Hubo un problema borrando la etiqueta de estado. Por favor, inténtelo de nuevo.',
-        'success' => 'La etiqueta de estado se ha eliminado exitosamente.',
-    ],
+    'update' => array(
+        'error'   => 'Localización no actualizada, por favor intete de nuevo',
+        'success' => 'Localización actualizada correctamente.'
+    ),
 
-    'help' => [
-        'undeployable'   => 'Estos activos no pueden ser asignados.',
-        'deployable'   => 'Estos activos pueden ser asignados. Una vez estén asignados, asumirán el meta estado de <i class="fas fa-circle text-blue"></i> <strong>Asignado</strong>.',
-        'archived'   => 'Estos activos no pueden ser asignados y solo se mostrarán en la vista de Archivados. Esto es útil para mantener información de activos por razones de presupuesto o de revisión histórica y al mismo tiempo se excluyen de los activos que se pueden usar en el día a día.',
-        'pending'   => 'Estos activos aún no pueden asignarse, y suelen utilizarse para elementos que están en reparación, pero que se espera que regresen a circulación.',
-    ],
+    'delete' => array(
+        'confirm'   => 'Confirma el borrado de la etiqueta de estado?',
+        'error'   => 'Ha sucedido un error eliminando la localización, inetente de nuevo.',
+        'success' => 'Localización eliminada correctamente.'
+    )
 
-];
+);

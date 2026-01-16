@@ -1,32 +1,24 @@
 <?php
 
-return [
+return array(
 
     'asset_tag'   	=> 'Marcação do Ativo',
     'asset_model'       => 'Modelo',
-    'assigned_to'   => 'Atribuído a',
-    'book_value'  	=> 'Valor Atual',
+    'book_value'  	=> 'Valor',
     'change' 		=> 'Entrada/Saída',
     'checkout_date' => 'Data de saída',
-    'checkoutto' 	=> 'Disponibilizado',
-    'components_cost' => 'Custo Total de Componentes',
-    'current_value' => 'Valor Atual',
+    'checkoutto' 	=> 'check-out',
     'diff' 			=> 'Diferença',
     'dl_csv' 		=> 'Baixar CSV',
     'eol' 			=> 'EOL',
     'id'      		=> 'ID',
-    'last_checkin_date' => 'Data do Último Checkin',
     'location' 		=> 'Local',
     'purchase_cost'	=> 'Custo',
     'purchase_date'	=> 'Comprado',
     'serial'   		=> 'Serial',
-    'status'   		=> 'Situação',
+    'status'   		=> 'Status',
     'title'      	=> 'Ativo ',
-    'image'		    => 'Imagem do equipamento',
-    'days_without_acceptance' => 'Dias sem que fosse aceito',
-    'monthly_depreciation' => 'Depreciação Mensal',
-    'requesting_user' => 'Usuário solicitante',
-    'requested_date' => 'Data de Solicitação',
-    'changed'       => 'Alterado',
-    'icon' => 'Ícone',
-];
+    'image'		=> 'Imagem do equipamento',
+    'days_without_acceptance' => 'Dias sem que fosse aceito'
+
+);

@@ -2,117 +2,75 @@
 
 {{-- Page title --}}
 @section('title')
- {{ trans('admin/components/general.checkout') }}
+     {{ trans('admin/components/general.checkout') }}
 @parent
 @stop
 
 {{-- Page content --}}
 @section('content')
 
-<div class="row">
-  <div class="col-md-8">
-    <form class="form-horizontal" id="checkout_form" method="post" action="" autocomplete="off">
+  <div class="row">
+    <div class="col-md-9">
+
+      <form class="form-horizontal" method="post" action="" autocomplete="off">
       <!-- CSRF Token -->
-      {{ csrf_field() }}
+      <input type="hidden" name="_token" value="{{ csrf_token() }}" />
 
       <div class="box box-default">
-        @if ($component->id)
-        <div class="box-header with-border">
-          <div class="box-heading">
-            <h2 class="box-title">{{ $component->name }}  ({{ $component->numRemaining()  }}  {{ trans('admin/components/general.remaining') }})</h2>
-          </div>
-        </div><!-- /.box-header -->
-        @endif
+
+          @if ($component->id)
+            <div class="box-header with-border">
+              <div class="box-heading">
+                <h3 class="box-title">{{ $component->name }} </h3>
+              </div>
+            </div><!-- /.box-header -->
+          @endif
+
 
         <div class="box-body">
 
-            @if ($component->company)
-                <!-- accessory name -->
-                <div class="form-group">
-                    <label class="col-sm-3 control-label">{{ trans('general.company') }}</label>
-                    <div class="col-md-6">
-                        <p class="form-control-static">{!! $component->company->present()->formattedNameLink  !!}</p>
-                    </div>
-                </div>
-            @endif
+          @if ($component->name)
+          <!-- consumable name -->
+          <div class="form-group">
+          <label class="col-sm-3 control-label">{{ trans('admin/consumables/general.consumable_name') }}</label>
+              <div class="col-md-6">
+                <p class="form-control-static">{{ $component->name }}</p>
+              </div>
+          </div>
+          @endif
 
-
-            @if ($component->category)
-                <!-- accessory name -->
-                <div class="form-group">
-                    <label class="col-sm-3 control-label">{{ trans('general.category') }}</label>
-                    <div class="col-md-6">
-                        <p class="form-control-static">{!! $component->category->present()->formattedNameLink  !!}</p>
-                    </div>
-                </div>
-            @endif
 
           <!-- Asset -->
-            @include ('partials.forms.edit.asset-select', ['translated_name' => trans('general.select_asset'), 'fieldname' => 'asset_id', 'company_id' => $component->company_id, 'required' => 'true', 'value' => old('asset_id')])
 
-            <div class="form-group {{ $errors->has('assigned_qty') ? ' has-error' : '' }}">
-              <label for="assigned_qty" class="col-md-3 control-label">
-                {{ trans('general.qty') }}
-              </label>
-              <div class="col-md-2 col-sm-5 col-xs-5">
-                <input class="form-control required col-md-12" type="text" name="assigned_qty" id="assigned_qty" value="{{ old('assigned_qty') ?? 1 }}" maxlength="99999" />
+          <div class="form-group {{ $errors->has('asset_id') ? ' has-error' : '' }}">
+              <label for="asset_id" class="col-md-3 control-label">{{ trans('admin/hardware/form.checkout_to') }}
+               <i class='icon-asterisk'></i></label>
+              <div class="col-md-9">
+                  {{ Form::select('asset_id', $assets_list , Input::old('asset_id', $component->asset_id), array('class'=>'select2', 'style'=>'min-width:100%')) }}
+                  {!! $errors->first('asset_id', '<span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
               </div>
-              @if ($errors->first('assigned_qty'))
-                <div class="col-md-9 col-md-offset-3">
-                  {!! $errors->first('assigned_qty', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
-                </div>
-              @endif
-            </div>
-            @if ($component->requireAcceptance() || $component->getEula() || ($snipeSettings->webhook_endpoint!=''))
-              <div class="form-group notification-callout">
-                <div class="col-md-8 col-md-offset-3">
-                  <div class="callout callout-info">
+          </div>
 
-                    @if ($component->category->require_acceptance=='1')
-                      <i class="far fa-envelope"></i>
-                      {{ trans('admin/categories/general.required_acceptance') }}
-                      <br>
-                    @endif
-
-                    @if ($component->getEula())
-                      <i class="far fa-envelope"></i>
-                      {{ trans('admin/categories/general.required_eula') }}
-                      <br>
-                    @endif
-
-                    @if ($snipeSettings->webhook_endpoint!='')
-                      <i class="fab fa-slack"></i>
-                      {{ trans('general.webhook_msg_note') }}
-                    @endif
-                  </div>
-                </div>
+          <div class="form-group {{ $errors->has('assigned_qty') ? ' has-error' : '' }}">
+              <label for="assigned_qty" class="col-md-3 control-label">{{ trans('general.qty') }}
+               <i class='icon-asterisk'></i></label>
+              <div class="col-md-9">
+                <input class="form-control" type="text" name="assigned_qty" id="assigned_qty" style="width: 70px;" value="{{ Input::old('assigned_qty') }}" />
+                {!! $errors->first('assigned_qty', '<br><span class="alert-msg"><i class="fa fa-times"></i> :message</span>') !!}
               </div>
-            @endif
+          </div>
 
-            <!-- Note -->
-            <div class="form-group{{ $errors->has('note') ? ' error' : '' }}">
-              <label for="note" class="col-md-3 control-label">{{ trans('admin/hardware/form.notes') }}</label>
-              <div class="col-md-7">
-                <textarea class="col-md-6 form-control" id="note" name="note">{{ old('note', $component->note) }}</textarea>
-                {!! $errors->first('note', '<span class="alert-msg" aria-hidden="true"><i class="fas fa-times" aria-hidden="true"></i> :message</span>') !!}
-              </div>
-            </div>
+        </div>
+        <div class="box-footer text-right">
+            <button type="submit" class="btn btn-success"><i class="fa fa-check icon-white"></i> {{ trans('general.save') }}</button>
+        </div>
+    </div>
+  </div>
 
 
-        </div> <!-- .BOX-BODY-->
-          <x-redirect_submit_options
-                  index_route="components.index"
-                  :button_label="trans('general.checkout')"
-                  :options="[
-                                'index' => trans('admin/hardware/form.redirect_to_all', ['type' => trans('general.components')]),
-                                'item' => trans('admin/hardware/form.redirect_to_type', ['type' => trans('general.component')]),
-                                'target' => trans('admin/hardware/form.redirect_to_checked_out_to'),
 
-                               ]"
-          />
-      </div> <!-- .box-default-->
-    </form>
-  </div> <!-- .col-md-9-->
-</div> <!-- .row -->
+</form>
 
+</div>
+</div>
 @stop

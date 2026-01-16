@@ -1,44 +1,44 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
-class UpdateAcceptedAtToAcceptanceId extends Migration
-{
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
-    public function up()
-    {
-        //
+class UpdateAcceptedAtToAcceptanceId extends Migration {
 
-        Schema::table('asset_logs', function ($table) {
-            $table->integer('accepted_id')->nullable()->default(null);
-        });
+	/**
+	 * Run the migrations.
+	 *
+	 * @return void
+	 */
+	public function up()
+	{
+		//
 
-        $results = DB::table('asset_logs as invitation')->join('asset_logs as acceptance', function ($join) {
-            $join->on('invitation.checkedout_to', '=', 'acceptance.checkedout_to');
-            $join->on('invitation.asset_id', '=', 'acceptance.asset_id');
-        })->select('invitation.id as invitation_id', 'acceptance.id as acceptance_id')
-            ->where('invitation.action_type', 'checkout')->where('acceptance.action_type', 'accepted')->get();
+		Schema::table('asset_logs', function ($table) {
+			$table->integer('accepted_id')->nullable()->default(NULL);
+		});
 
-        foreach ($results as $result) {
-            $update = DB::update('update '.DB::getTablePrefix().'asset_logs set accepted_id=? where id=?', [$result->acceptance_id, $result->invitation_id]);
-        }
-    }
+		$results = DB::select('select invitation.id AS invitation_id, acceptance.id AS acceptance_id FROM asset_logs invitation INNER JOIN asset_logs acceptance ON (invitation.checkedout_to=acceptance.checkedout_to AND invitation.asset_id=acceptance.asset_id) WHERE invitation.action_type="checkout" AND acceptance.action_type="accepted"');
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
-    {
-        //
-        Schema::table('asset_logs', function ($table) {
-            $table->dropColumn('accepted_id');
-        });
-    }
+
+		foreach ($results as $result) {
+			$update = DB::update('update asset_logs set accepted_id=? where id=?', [$result->acceptance_id, $result->invitation_id]);
+		}
+
+	}
+
+	/**
+	 * Reverse the migrations.
+	 *
+	 * @return void
+	 */
+	public function down()
+	{
+		//
+		Schema::table('asset_logs', function ($table) {
+			$table->dropColumn('accepted_id');
+		});
+
+	}
+
 }

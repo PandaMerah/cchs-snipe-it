@@ -1,44 +1,47 @@
-@extends('layouts/basic')
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Be right back.</title>
 
-{{-- Page title --}}
-@section('title')
-  {{ trans('general.maintenance_mode_title') }}
-@parent
-@stop
+        <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet" type="text/css">
 
-{{-- Page content --}}
+        <style>
+            html, body {
+                height: 100%;
+            }
 
-@section('content')
+            body {
+                margin: 0;
+                padding: 0;
+                width: 100%;
+                color: #B0BEC5;
+                display: table;
+                font-weight: 100;
+                font-family: 'Lato';
+            }
 
+            .container {
+                text-align: center;
+                display: table-cell;
+                vertical-align: middle;
+            }
 
+            .content {
+                text-align: center;
+                display: inline-block;
+            }
 
-<div class="container">
-<div class="row">
-  <div class="col-md-9 col-md-offset-1">
-
-    <div class="box box-warning">
-
-      <div class="box-header with-border">
-        <h1 class="box-title">
-          <x-icon type="warning" class="text-orange" />
-          {{ trans('general.maintenance_mode_title') }}
-        </h1>
-      </div><!-- /.box-header -->
-
-      <div class="box-body">
-        <div class="col-md-12">
-
-          <div class="col-md-2">
-            <img src="{{ config('app.url') }}/img/sad-panda.png" class="pull-right" style="width: 140px; height: 140px;">
-          </div>
-          <div class="alert alert-warning fade in">
-            <h2> {{ trans('general.maintenance_mode') }}</h2>
-          </div>
-
-        </div> <!-- /.div -->
-      </div><!-- /.box-body -->
-
-    </div>
-
-</div>
-@stop
+            .title {
+                font-size: 72px;
+                margin-bottom: 40px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="content">
+                <div class="title">Be right back.</div>
+            </div>
+        </div>
+    </body>
+</html>

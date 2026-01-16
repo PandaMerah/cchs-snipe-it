@@ -2,9 +2,8 @@
 
 return array(
 
-    'deleted' => 'Fornecedor excluído',
     'does_not_exist' => 'O fornecedor não existe.',
-
+    'assoc_users'	 => 'Este fornecedor está no momento associado com pelo menos um modelo e não pode ser excluído. Atualize seus modelos para não referenciarem mais este fornecedor e tente novamente. ',
 
     'create' => array(
         'error'   => 'O fornecedor não foi criado, tente novamente.',
@@ -19,10 +18,7 @@ return array(
     'delete' => array(
         'confirm'   => 'Tem certeza de que deseja excluir este fornecedor?',
         'error'   => 'Houve um problema ao excluir o fornecedor. Tente novamente.',
-        'success' => 'O fornecedor foi excluído com sucesso.',
-        'not_found'               => 'Supplier not found.',
-        'bulk_success'            => 'Suppliers were deleted successfully.',
-        'partial_success'        => 'Supplier deleted successfully. See additional information below. | :count suppliers were deleted successfully. See additional information below.',
+        'success' => 'O fornecedor foi excluído com sucesso.'
     )
 
 );

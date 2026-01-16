@@ -1,131 +1,134 @@
 <?php
 
 namespace App\Console\Commands;
-
-use App\Helpers\Helper;
-use App\Mail\ExpiringAssetsMail;
-use App\Mail\ExpiringLicenseMail;
 use App\Models\Asset;
 use App\Models\License;
 use App\Models\Setting;
+use DB;
+
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Mail;
 
-class SendExpirationAlerts extends Command
-{
-    /**
-     * The name and signature of the console command.
- *
-     * @var string
-     */
-    protected $signature = 'snipeit:expiring-alerts {--expired-licenses}';
+class SendExpirationAlerts extends Command {
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Check for expiring warrantees and service agreements, and sends out an alert email.';
+	/**
+	 * The console command name.
+	 *
+	 * @var string
+	 */
+	protected $name = 'alerts:expiring';
 
-    /**
-     * Create a new command instance.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-    }
+	/**
+	 * The console command description.
+	 *
+	 * @var string
+	 */
+	protected $description = 'Check for expiring warrantees and service agreements, and sends out an alert email.';
 
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle()
-    {
-        $settings = Setting::getSettings();
-        $alert_interval = $settings->alert_interval;
+	/**
+	 * Create a new command instance.
+	 *
+	 * @return void
+	 */
+	public function __construct()
+	{
+		parent::__construct();
+	}
 
-        if (($settings->alert_email != '') && ($settings->alerts_enabled == 1)) {
+	/**
+	 * Execute the console command.
+	 *
+	 * @return mixed
+	 */
+	public function fire()
+	{
 
-            // Send a rollup to the admin, if settings dictate
-            $recipients = collect(explode(',', $settings->alert_email))
-                ->map(fn($item) => trim($item)) // Trim each email
-                ->filter(fn($item) => !empty($item))
-                ->all();
-            // Expiring Assets
-            $assets = Asset::getExpiringWarrantyOrEol($alert_interval);
+		// Expiring Assets
+		$expiring_assets = Asset::getExpiringWarrantee(60);
+		$this->info(count($expiring_assets).' expiring assets');
 
-            if ($assets->count() > 0) {
-
-                Mail::to($recipients)->send(new ExpiringAssetsMail($assets, $alert_interval));
-
-                $this->table(
-                    [
-                        trans('general.id'),
-                        trans('admin/hardware/form.tag'),
-                        trans('admin/hardware/form.model'),
-                        trans('general.model_no'),
-                        trans('general.purchase_date'),
-                        trans('admin/hardware/form.eol_rate'),
-                        trans('admin/hardware/form.eol_date'),
-                        trans('admin/hardware/form.warranty_expires'),
-                    ],
-                    $assets->map(fn($item) =>
-                    [
-                        trans('general.id')  => $item->id,
-                        trans('admin/hardware/form.tag') => $item->asset_tag,
-                        trans('admin/hardware/form.model') => $item->model->name,
-                        trans('general.model_no') => $item->model->model_number,
-                        trans('general.purchase_date') => $item->purchase_date_formatted,
-                        trans('admin/hardware/form.eol_rate')  => $item->model->eol,
-                        trans('admin/hardware/form.eol_date') => $item->eol_date ? $item->eol_formatted_date .' ('.$item->eol_diff_for_humans.')' : '',
-                        trans('admin/hardware/form.warranty_expires') => $item->warranty_expires ? $item->warranty_expires_formatted_date .' ('.$item->warranty_expires_diff_for_humans.')' : '',
-                   ])
-                   );
-            }
-
-            // Expiring licenses
-            $licenses = License::query()->ExpiringLicenses($alert_interval, $this->option('expired-licenses'))
-                ->with('manufacturer','category')
-                ->orderBy('expiration_date', 'ASC')
-                ->orderBy('termination_date', 'ASC')
-                ->get();
-            if ($licenses->count() > 0) {
-                Mail::to($recipients)->send(new ExpiringLicenseMail($licenses, $alert_interval));
-
-                $this->table(
-                    [
-                        trans('general.id'),
-                        trans('general.name'),
-                        trans('general.purchase_date'),
-                        trans('admin/licenses/form.expiration'),
-                        trans('mail.expires'),
-                        trans('admin/licenses/form.termination_date'),
-                        trans('mail.terminates')],
-                    $licenses->map(fn($item) => [
-                        trans('general.id') => $item->id,
-                        trans('general.name') => $item->name,
-                        trans('general.purchase_date') => $item->purchase_date_formatted,
-                        trans('admin/licenses/form.expiration') => $item->expires_formatted_date,
-                        trans('mail.expires') => $item->expires_formatted_date ? $item->expires_diff_for_humans : '',
-                        trans('admin/licenses/form.termination_date') => $item->terminates_formatted_date,
-                        trans('mail.terminates') => $item->terminates_diff_for_humans
-                    ])
-                );
-            }
-
-            // Send a message even if the count is 0
-            $this->info(trans_choice('mail.assets_warrantee_alert', $assets->count(), ['count' => $assets->count(), 'threshold' => $alert_interval]));
-            $this->info(trans_choice('mail.license_expiring_alert', $licenses->count(), ['count' => $licenses->count(), 'threshold' => $alert_interval]));
+		$asset_data['count'] =  count($expiring_assets);
+		$asset_data['email_content'] ='';
+		$now = date("Y-m-d");
 
 
+		foreach ($expiring_assets as $asset) {
 
-        } else {
-            if ($settings->alert_email == '') {
-                $this->error('Could not send email. No alert email configured in settings');
-            } elseif (1 != $settings->alerts_enabled) {
-                $this->info('Alerts are disabled in the settings. No mail will be sent');
-            }
-        }
-    }
+			$expires = $asset->warrantee_expires();
+			$difference =  round(abs(strtotime($expires) - strtotime($now))/86400);
+
+			if ($difference > 30) {
+				$asset_data['email_content'] .= '<tr style="background-color: #fcffa3;">';
+			} else {
+				$asset_data['email_content'] .= '<tr style="background-color:#d9534f;">';
+			}
+				$asset_data['email_content'] .= '<td><a href="'.config('app.url').'/hardware/'.$asset->id.'/view">';
+				$asset_data['email_content'] .= $asset->showAssetName().'</a></td><td>'.$asset->asset_tag.'</td>';
+				$asset_data['email_content'] .= '<td>'.$asset->warrantee_expires().'</td>';
+				$asset_data['email_content'] .= '<td>'.$difference.' days</td>';
+				$asset_data['email_content'] .= '</tr>';
+		}
+
+		// Expiring licenses
+		$expiring_licenses = License::getExpiringLicenses(60);
+		$this->info(count($expiring_licenses).' expiring licenses');
+
+
+		$license_data['count'] =  count($expiring_licenses);
+		$license_data['email_content'] = '';
+
+		foreach ($expiring_licenses as $license) {
+			$expires = $license->expiration_date;
+			$difference =  round(abs(strtotime($expires) - strtotime($now))/86400);
+
+			if ($difference > 30) {
+				$license_data['email_content'] .= '<tr style="background-color: #fcffa3;">';
+			} else {
+				$license_data['email_content'] .= '<tr style="background-color:#d9534f;">';
+			}
+				$license_data['email_content'] .= '<td><a href="'.config('app.url').'/admin/licenses/'.$license->id.'/view">';
+				$license_data['email_content'] .= $license->name.'</a></td>';
+				$license_data['email_content'] .= '<td>'.$license->expiration_date.'</td>';
+				$license_data['email_content'] .= '<td>'.$difference.' days</td>';
+				$license_data['email_content'] .= '</tr>';
+		}
+
+		if ((Setting::getSettings()->alert_email!='')  && (Setting::getSettings()->alerts_enabled==1)) {
+
+
+			if (count($expiring_assets) > 0) {
+				Mail::send('emails.expiring-assets-report', $asset_data, function ($m)  {
+	                $m->to(explode(',',Setting::getSettings()->alert_email), Setting::getSettings()->site_name);
+	                $m->subject('Expiring Assets Report');
+	        	});
+
+			}
+
+			if (count($expiring_licenses) > 0) {
+				Mail::send('emails.expiring-licenses-report', $license_data, function ($m)  {
+	                $m->to(explode(',',Setting::getSettings()->alert_email), Setting::getSettings()->site_name);
+	                $m->subject('Expiring Licenses Report');
+	        	});
+
+			}
+
+
+		} else {
+
+			if (Setting::getSettings()->alert_email=='') {
+				echo "Could not send email. No alert email configured in settings. \n";
+			} elseif (Setting::getSettings()->alerts_enabled!=1) {
+				echo "Alerts are disabled in the settings. No mail will be sent. \n";
+			}
+
+		}
+
+
+
+
+	}
+
+
+
+
+
 }

@@ -1,277 +1,195 @@
 <?php
-
 namespace App\Http\Controllers;
 
-use App\Helpers\Helper;
-use App\Http\Requests\CustomFieldRequest;
-use App\Models\CustomField;
+use View;
 use App\Models\CustomFieldset;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use \Illuminate\Contracts\View\View;
+use App\Models\CustomField;
+use Input;
+use Validator;
+use Redirect;
+use AssetModel;
+use Lang;
+use Auth;
 
-/**
- * This controller handles all actions related to Custom Asset Fields for
- * the Snipe-IT Asset Management application.
- *
- * @todo Improve documentation here.
- * @todo Check for raw DB queries and try to convert them to query builder statements
- * @version    v2.0
- * @author [Brady Wetherington] [<uberbrady@gmail.com>]
- */
 class CustomFieldsController extends Controller
 {
-    /**
-     * Returns a view with a listing of custom fields.
-     *
-     * @author [Brady Wetherington] [<uberbrady@gmail.com>]
-     * @since [v1.8]
-     */
-    public function index() : View
-    {
-        $this->authorize('view', CustomField::class);
-
-        $fieldsets = CustomFieldset::with('fields', 'models')->get();
-        $fields = CustomField::with('fieldset')->get();
-
-        return view('custom_fields.index')->with('custom_fieldsets', $fieldsets)->with('custom_fields', $fields);
-    }
 
     /**
-     * Just redirect the user back if they try to view the details of a field.
-     * We already show those details on the listing page.
+     * Display a listing of the resource.
      *
-     * @see CustomFieldsController::storeField()
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v5.1.5]
+     * @return Response
      */
-    public function show() : RedirectResponse
+    public function index()
     {
-        return redirect()->route('fields.index');
+        //
+        $fieldsets=CustomFieldset::with("fields", "models")->get();
+        //$fieldsets=CustomFieldset::all();
+        $fields=CustomField::with("fieldset")->get();
+        //$fields=CustomField::all();
+        return View::make("custom_fields.index")->with("custom_fieldsets", $fieldsets)->with("custom_fields", $fields);
     }
 
 
     /**
-     * Returns a view with a form to create a new custom field.
+     * Show the form for creating a new resource.
      *
-     * @see CustomFieldsController::storeField()
-     * @author [Brady Wetherington] [<uberbrady@gmail.com>]
-     * @since [v1.8]
+     * @return Response
      */
-    public function create(Request $request) : View
+    public function create()
     {
-        $this->authorize('create', CustomField::class);
-        $fieldsets = CustomFieldset::get();
-
-        return view('custom_fields.fields.edit', [
-            'predefinedFormats' => Helper::predefined_formats(),
-            'customFormat' => '',
-            'fieldsets' => $fieldsets,
-            'field' => new CustomField(),
-        ]);
+        //
+        return View::make("custom_fields.create");
     }
 
+
     /**
-     * Validates and stores a new custom field.
+     * Store a newly created resource in storage.
      *
-     * @see CustomFieldsController::createField()
-     * @author [Brady Wetherington] [<uberbrady@gmail.com>]
-     * @since [v1.8]
+     * @return Response
      */
-    public function store(CustomFieldRequest $request) : RedirectResponse
+    public function store()
     {
-        $this->authorize('create', CustomField::class);
-
-        $show_in_email = $request->input("show_in_email", 0);
-        $display_in_user_view = $request->input("display_in_user_view", 0);
-
-        // Override the display settings if the field is encrypted
-        if ($request->input("field_encrypted") == '1') {
-            $show_in_email = '0';
-            $display_in_user_view = '0';
-        }
-        
-        $field = new CustomField([
-            "name" => trim($request->input("name")),
-            "element" => $request->input("element"),
-            "help_text" => $request->input("help_text"),
-            "field_values" => $request->input("field_values"),
-            "field_encrypted" => $request->input("field_encrypted", 0),
-            "show_in_email" => $show_in_email,
-            "is_unique" => $request->input("is_unique", 0),
-            "display_in_user_view" => $display_in_user_view,
-            "auto_add_to_fieldsets" => $request->input("auto_add_to_fieldsets", 0),
-            "show_in_listview" => $request->input("show_in_listview", 0),
-            "show_in_requestable_list" => $request->input("show_in_requestable_list", 0),
-            "display_checkin" => $request->input("display_checkin", 0),
-            "display_checkout" => $request->input("display_checkout", 0),
-            "display_audit" => $request->input("display_audit", 0),
-            "created_by" => auth()->id()
-        ]);
-
-
-        if ($request->filled('custom_format')) {
-            $field->format = $request->input('custom_format');
+        //
+        $cfset=new CustomFieldset(["name" => Input::get("name"),"user_id" => Auth::user()->id]);
+        $validator=Validator::make(Input::all(), $cfset->rules);
+        if ($validator->passes()) {
+            $cfset->save();
+            return Redirect::route("admin.custom_fields.show", [$cfset->id])->with('success', Lang::get('admin/custom_fields/message.fieldset.create.success'));
         } else {
-            $field->format = $request->input('format');
+            return Redirect::back()->withInput()->withErrors($validator);
         }
-
-        if ($field->save()) {
-
-            // Sync fields with fieldsets
-            $fieldset_array = $request->input('associate_fieldsets');
-            if ($request->has('associate_fieldsets') && (is_array($fieldset_array))) {
-                $field->fieldset()->sync(array_keys($fieldset_array));
-            } else {
-                $field->fieldset()->sync([]);
-            }
-
-
-            return redirect()->route('fields.index')->with('success', trans('admin/custom_fields/message.field.create.success'));
-        }
-
-        return redirect()->back()->with('selected_fieldsets', $request->input('associate_fieldsets'))->withInput()
-            ->with('error', trans('admin/custom_fields/message.field.create.error'));
     }
 
-
-    /**
-     * Detach a custom field from a fieldset.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v3.0]
-     */
-    public function deleteFieldFromFieldset($field_id, $fieldset_id) : RedirectResponse
+    public function associate($id)
     {
-        $this->authorize('update', CustomField::class);
-        $field = CustomField::find($field_id);
 
-        // Check that the field exists - this is mostly related to the demo, where we 
-        // rewrite the data every x minutes, so it's possible someone might be disassociating 
-        // a field from a fieldset just as we're wiping the database
-        if (($field) && ($fieldset_id)) {
+        $set = CustomFieldset::find($id);
 
-        if ($field->fieldset()->detach($fieldset_id)) {
-            return redirect()->route('fieldsets.show', ['fieldset' => $fieldset_id])
-                ->with('success', trans('admin/custom_fields/message.field.delete.success'));
-            } else {
-                return redirect()->back()->with('error', trans('admin/custom_fields/message.field.delete.error'))
-                    ->withInput();
+        foreach ($set->fields as $field) {
+            if ($field->id == Input::get('field_id')) {
+                return Redirect::route("admin.custom_fields.show", [$id])->withInput()->withErrors(['field_id' => Lang::get('admin/custom_fields/message.field.already_added')]);
             }
         }
 
-        return redirect()->back()->with('error', trans('admin/custom_fields/message.field.delete.error'));
+        $results=$set->fields()->attach(Input::get('field_id'), ["required" => (Input::get('required') == "on"),"order" => Input::get('order')]);
 
-       
+        return Redirect::route("admin.custom_fields.show", [$id])->with("success", Lang::get('admin/custom_fields/message.field.create.assoc_success'));
     }
 
-    /**
-     * Delete a custom field.
-     *
-     * @author [Brady Wetherington] [<uberbrady@gmail.com>]
-     * @since [v1.8]
-     */
-    public function destroy(CustomField $field) : RedirectResponse
+    public function createField()
     {
-        $this->authorize('delete', CustomField::class);
-
-        if (($field->fieldset) && ($field->fieldset->count() > 0)) {
-            return redirect()->back()->with('error', trans('admin/custom_fields/message.field.delete.in_use'));
-        }
-        $field->delete();
-        return redirect()->route("fields.index")
-            ->with("success", trans('admin/custom_fields/message.field.delete.success'));
+        return View::make("custom_fields.create_field");
     }
 
-
-    /**
-     * Return a view to edit a custom field
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @param  int $id
-     * @since [v4.0]
-     */
-    public function edit(Request $request, CustomField $field) : View | RedirectResponse
+    public function storeField()
     {
-        $this->authorize('update', CustomField::class);
-        $fieldsets = CustomFieldset::get();
-        $customFormat = '';
-        if ((stripos($field->format, 'regex') === 0) && ($field->format !== CustomField::PREDEFINED_FORMATS['MAC'])) {
-            $customFormat = $field->format;
-        }
-
-        return view('custom_fields.fields.edit', [
-            'field'             => $field,
-            'customFormat'      => $customFormat,
-            'fieldsets'         => $fieldsets,
-            'predefinedFormats' => Helper::predefined_formats(),
-        ]);
-
-    }
+        $field=new CustomField(["name" => Input::get("name"),"element" => Input::get("element"),"user_id" => Auth::user()->id]);
 
 
-    /**
-     * Store the updated field
-     *
-     * @todo Allow encrypting/decrypting if encryption status changes
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @param  int $id
-     * @since [v4.0]
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     */
-    public function update(CustomFieldRequest $request, CustomField $field) : RedirectResponse
-    {
-        $this->authorize('update', CustomField::class);
-        $show_in_email = $request->input("show_in_email", 0);
-        $display_in_user_view = $request->input("display_in_user_view", 0);
-
-        // Override the display settings if the field is encrypted
-        if ($request->input("field_encrypted") == '1') {
-            $show_in_email = '0';
-            $display_in_user_view = '0';
-        }
-        
-        $field->name          = trim($request->input("name"));
-        $field->element       = $request->input("element");
-        $field->field_values  = $request->input("field_values");
-        $field->created_by       = auth()->id();
-        $field->help_text     = $request->input("help_text");
-        $field->show_in_email = $show_in_email;
-        $field->is_unique     = $request->input("is_unique", 0);
-        $field->display_in_user_view = $display_in_user_view;
-        $field->auto_add_to_fieldsets = $request->input("auto_add_to_fieldsets", 0);
-        $field->show_in_listview = $request->input("show_in_listview", 0);
-        $field->show_in_requestable_list = $request->input("show_in_requestable_list", 0);
-        $field->display_checkin = $request->input("display_checkin", 0);
-        $field->display_checkout = $request->input("display_checkout", 0);
-        $field->display_audit = $request->input("display_audit", 0);
-
-        if ($request->input('format') == 'CUSTOM REGEX') {
-            $field->format = $request->input('custom_format');
+        if (!in_array(Input::get('format'), array_keys(CustomField::$PredefinedFormats))) {
+            $field->format=Input::get("custom_format");
         } else {
-            $field->format = $request->input('format');
+            $field->format=Input::get('format');
         }
 
-        if ($field->element == 'checkbox' || $field->element == 'radio'){
-            $field->format = 'ANY';
-        }
-
-        if ($field->save()) {
-
-            // Sync fields with fieldsets
-            $fieldset_array = $request->input('associate_fieldsets');
-            if ($request->has('associate_fieldsets') && (is_array($fieldset_array))) {
-                $field->fieldset()->sync(array_keys($fieldset_array));
+        $validator=Validator::make(Input::all(), $field->rules);
+        if ($validator->passes()) {
+            $results=$field->save();
+            //return "postCreateField: $results";
+            if ($results) {
+                return Redirect::route("admin.custom_fields.index")->with("success", Lang::get('admin/custom_fields/message.field.create.success'));
             } else {
-                $field->fieldset()->sync([]);
+                return Redirect::back()->withInput()->with('error', Lang::get('admin/custom_fields/message.field.create.error'));
             }
+        } else {
+            return Redirect::back()->withInput()->withErrors($validator);
+        }
+    }
 
-            return redirect()->route('fields.index')->with('success', trans('admin/custom_fields/message.field.update.success'));
+    public function deleteField($field_id)
+    {
+        $field=CustomField::find($field_id);
+
+        if ($field->fieldset->count()>0) {
+            return Redirect::back()->withErrors(['message' => "Field is in-use"]);
+        } else {
+            $field->delete();
+            return Redirect::route("admin.custom_fields.index")->with("success", Lang::get('admin/custom_fields/message.field.delete.success'));
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function show($id)
+    {
+        //$id=$parameters[0];
+        $cfset=CustomFieldset::find($id);
+
+        //print_r($parameters);
+        //
+        $custom_fields_list=["" => "Add New Field to Fieldset"] + CustomField::lists("name", "id")->toArray();
+        // print_r($custom_fields_list);
+        $maxid=0;
+        foreach ($cfset->fields as $field) {
+            // print "Looking for: ".$field->id;
+            if ($field->pivot->order > $maxid) {
+                $maxid=$field->pivot->order;
+            }
+            if (isset($custom_fields_list[$field->id])) {
+                // print "Found ".$field->id.", so removing it.<br>";
+                unset($custom_fields_list[$field->id]);
+            }
         }
 
-        return redirect()->back()->withInput()->with('error', trans('admin/custom_fields/message.field.update.error'));
+        return View::make("custom_fields.show")->with("custom_fieldset", $cfset)->with("maxid", $maxid+1)->with("custom_fields_list", $custom_fields_list);
+    }
+
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function edit($id)
+    {
+        //
+    }
+
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function update($id)
+    {
+        //
+    }
+
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return Response
+     */
+    public function destroy($id)
+    {
+        //
+        $fieldset=CustomFieldset::find($id);
+
+        $models=\App\Models\AssetModel::where("fieldset_id", "=", $id);
+        if ($models->count()==0) {
+            $fieldset->delete();
+            return Redirect::route("admin.custom_fields.index")->with("success", Lang::get('admin/custom_fields/message.fieldset.delete.success'));
+        } else {
+            return Redirect::route("admin.custom_fields.index")->with("error", Lang::get('admin/custom_fields/message.fieldset.delete.in_use')); //->with("models",$models);
+        }
     }
 }

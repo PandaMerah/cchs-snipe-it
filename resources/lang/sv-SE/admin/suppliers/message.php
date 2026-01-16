@@ -2,27 +2,23 @@
 
 return array(
 
-    'deleted' => 'Raderad leverantör',
-    'does_not_exist' => 'Leverantören existerar inte.',
-
+    'does_not_exist' => 'Supplier does not exist.',
+    'assoc_users'	 => 'This supplier is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this supplier and try again. ',
 
     'create' => array(
-        'error'   => 'Leverantören kunde inte skapas. Vänligen försök igen.',
-        'success' => 'Leverantör skapad.'
+        'error'   => 'Supplier was not created, please try again.',
+        'success' => 'Supplier created successfully.'
     ),
 
     'update' => array(
-        'error'   => 'Leverantören kunde inte uppdateras. Vänligen försök igen.',
-        'success' => 'Leverantör uppdaterad.'
+        'error'   => 'Supplier was not updated, please try again',
+        'success' => 'Supplier updated successfully.'
     ),
 
     'delete' => array(
-        'confirm'   => 'Är du säker på att du vill radera denna leverantör?',
-        'error'   => 'Det uppstod ett problem vid radering av leverantör. Var god försök igen.',
-        'success' => 'Leverantör raderad.',
-        'not_found'               => 'Supplier not found.',
-        'bulk_success'            => 'Suppliers were deleted successfully.',
-        'partial_success'        => 'Supplier deleted successfully. See additional information below. | :count suppliers were deleted successfully. See additional information below.',
+        'confirm'   => 'Are you sure you wish to delete this supplier?',
+        'error'   => 'There was an issue deleting the supplier. Please try again.',
+        'success' => 'Supplier was deleted successfully.'
     )
 
 );

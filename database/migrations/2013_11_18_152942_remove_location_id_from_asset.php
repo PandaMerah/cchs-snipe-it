@@ -27,4 +27,5 @@ class RemoveLocationIdFromAsset extends Migration
             $table->integer('location_id')->nullable();
         });
     }
+
 }

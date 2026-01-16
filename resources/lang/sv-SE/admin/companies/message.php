@@ -1,20 +1,18 @@
 <?php
-
-return [
-    'does_not_exist' => 'Företaget finns inte.',
-    'deleted'        => 'Raderat företag',
-    'assoc_users'    => 'Detta företag är för närvarande kopplat till minst en modell och kan inte tas bort. Vänligen uppdatera din modeller för att inte längre referera till detta företag och försök igen. ',
-    'create' => [
-        'error'   => 'Företaget kunde inte skapas. Vänligen försök igen.',
-        'success' => 'Företag skapat.',
-    ],
-    'update' => [
-        'error'   => 'Företaget kunde inte uppdateras. Vänligen försök igen.',
-        'success' => 'Företag uppdaterat.',
-    ],
-    'delete' => [
-        'confirm' => 'Är du säker på att du vill ta bort det här företaget?',
-        'error'   => 'Ett fel uppstod när företaget skulle tas bort. Vänligen försök igen.',
-        'success' => 'Företag raderat.',
-    ],
-];
+return array(
+    'does_not_exist' => 'Company does not exist.',
+    'assoc_users'    => 'This company is currently associated with at least one model and cannot be deleted. Please update your models to no longer reference this company and try again. ',
+    'create' => array(
+        'error'   => 'Company was not created, please try again.',
+        'success' => 'Company created successfully.'
+    ),
+    'update' => array(
+        'error'   => 'Company was not updated, please try again',
+        'success' => 'Company updated successfully.'
+    ),
+    'delete' => array(
+        'confirm' => 'Are you sure you wish to delete this company?',
+        'error'   => 'There was an issue deleting the company. Please try again.',
+        'success' => 'The Company was deleted successfully.'
+    )
+);

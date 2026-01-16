@@ -1,499 +1,550 @@
 <?php
-
-namespace App\Http\Controllers;
-
-use App\Helpers\Helper;
-use App\Http\Requests\ImageUploadRequest;
-use App\Http\Requests\StoreAssetModelRequest;
-use App\Models\Actionlog;
-use App\Models\AssetModel;
-use App\Models\CustomField;
-use App\Models\SnipeModel;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
-use \Illuminate\Contracts\View\View;
-use \Illuminate\Http\RedirectResponse;
-use Illuminate\Support\MessageBag;
-
-
 /**
- * This class controls all actions related to asset models for
+ * This controller handles all actions related to Asset Models for
  * the Snipe-IT Asset Management application.
  *
+ * PHP version 5.5.9
+ * @package    Snipe-IT
  * @version    v1.0
- * @author [A. Gianotto] [<snipe@snipe.net>]
+ */
+namespace App\Http\Controllers;
+
+use Image;
+use Input;
+use Lang;
+use App\Models\AssetModel;
+use Redirect;
+use App\Models\Setting;
+use Auth;
+use DB;
+use App\Models\Depreciation;
+use App\Models\Manufacturer;
+use Str;
+use Validator;
+use View;
+use App\Models\Asset;
+use App\Models\Company;
+use Config;
+use App\Helpers\Helper;
+
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+/**
+ * This class controls all actions related to asset models
  */
 class AssetModelsController extends Controller
 {
-    protected MessageBag $validatorErrors;
     /**
-     * Returns a view that invokes the ajax tables which actually contains
-     * the content for the accessories listing, which is generated in getDatatable.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     */
-    public function index() : View
+    * Returns a view that invokes the ajax tables which actually contains
+    * the content for the accessories listing, which is generated in getDatatable.
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @see AssetModelsController::getDatatable() method that generates the JSON response
+    * @since [v1.0]
+    * @return View
+    */
+    public function getIndex()
     {
-        $this->authorize('index', AssetModel::class);
-
-        return view('models/index');
+        // Show the page
+        return View::make('models/index');
     }
 
     /**
-     * Returns a view containing the asset model creation form.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     */
-    public function create() : View
+    * Returns a view containing the asset model creation form.
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v1.0]
+    * @return View
+    */
+    public function getCreate()
     {
-        $this->authorize('create', AssetModel::class);
-
-        return view('models/edit')->with('category_type', 'asset')
-            ->with('depreciation_list', Helper::depreciationList())
-            ->with('item', new AssetModel);
+        // Show the page
+        $depreciation_list = \App\Helpers\Helper::depreciationList();
+        $manufacturer_list = \App\Helpers\Helper::manufacturerList();
+        $category_list = \App\Helpers\Helper::categoryList();
+        return View::make('models/edit')
+        ->with('category_list', $category_list)
+        ->with('depreciation_list', $depreciation_list)
+        ->with('manufacturer_list', $manufacturer_list)
+        ->with('model', new AssetModel);
     }
 
+
     /**
-     * Validate and process the new Asset Model data.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     * @param ImageUploadRequest $request
-     */
-    public function store(StoreAssetModelRequest $request) : RedirectResponse
+    * Validate and process the new Asset Model data.
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v1.0]
+    * @return Redirect
+    */
+    public function postCreate()
     {
-        $this->authorize('create', AssetModel::class);
+
+        // Create a new asset model
         $model = new AssetModel;
 
-        $model->eol = $request->input('eol');
-        $model->depreciation_id = $request->input('depreciation_id');
-        $model->name = $request->input('name');
-        $model->model_number = $request->input('model_number');
-        $model->min_amt = $request->input('min_amt');
-        $model->manufacturer_id = $request->input('manufacturer_id');
-        $model->category_id = $request->input('category_id');
-        $model->notes = $request->input('notes');
-        $model->created_by = auth()->id();
-        $model->requestable = $request->has('requestable');
-        $model->require_serial = $request->input('require_serial', 0);
 
-        if ($request->input('fieldset_id') != '') {
-            $model->fieldset_id = $request->input('fieldset_id');
+        if (e(Input::get('depreciation_id')) == '') {
+            $model->depreciation_id =  0;
+        } else {
+            $model->depreciation_id = e(Input::get('depreciation_id'));
         }
 
-        if ($request->has('use_cloned_image')) {
-            $cloned_model_img = AssetModel::select('image')->find($request->input('clone_image_from_id'));
-            if ($cloned_model_img) {
-                $new_image_name = 'clone-'.date('U').'-'.$cloned_model_img->image;
-                $new_image = 'models/'.$new_image_name;
-                Storage::disk('public')->copy('models/'.$cloned_model_img->image, $new_image);
-                $model->image = $new_image_name;
-            }
+        if (e(Input::get('eol')) == '') {
+            $model->eol =  0;
+        } else {
+            $model->eol = e(Input::get('eol'));
+        }
+
+            // Save the model data
+            $model->name                = e(Input::get('name'));
+            $model->modelno             = e(Input::get('modelno'));
+            $model->manufacturer_id     = e(Input::get('manufacturer_id'));
+            $model->category_id         = e(Input::get('category_id'));
+            $model->note            = e(Input::get('note'));
+            $model->user_id             = Auth::user()->id;
+        if (Input::get('custom_fieldset')!='') {
+            $model->fieldset_id = e(Input::get('custom_fieldset'));
+        }
+
+            //$model->show_mac_address 	= e(Input::get('show_mac_address', '0'));
+
+
+        if (Input::file('image')) {
+            $image = Input::file('image');
+            $file_name = str_random(25).".".$image->getClientOriginalExtension();
+            $path = public_path('uploads/models/'.$file_name);
+          // Image::make($image->getRealPath())->resize(300, null, function ($constraint) {
+          //     $constraint->aspectRatio();
+          //     $constraint->upsize();
+          // })->save($path);
+            $model->image = $file_name;
+        }
+
+            // Was it created?
+        if ($model->save()) {
+            // Redirect to the new model  page
+            return Redirect::to("hardware/models")->with('success', Lang::get('admin/models/message.create.success'));
+        }
+
+            return Redirect::back()->withInput()->withErrors($model->getErrors());
+
+    }
+
+    /**
+    * Validates and stores new Asset Model data created from the
+    * modal form on the Asset Creation view.
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v2.0]
+    * @return String JSON
+    */
+    public function store()
+    {
+      //COPYPASTA!!!! FIXME
+        $model = new \App\Models\AssetModel;
+
+        $settings=Input::all();
+        $settings['eol']=0;
+      //
+
+
+        $model->name=e(Input::get('name'));
+        $model->manufacturer_id = e(Input::get('manufacturer_id'));
+        $model->category_id = e(Input::get('category_id'));
+        $model->modelno = e(Input::get('modelno'));
+        $model->user_id = Auth::user()->id;
+        $model->note            = e(Input::get('note'));
+        $model->eol=0;
+
+        if ($model->save()) {
+            return JsonResponse::create($model);
+        } else {
+            return JsonResponse::create(["error" => "Failed validation: ".print_r($model->getErrors()->all('<li>:message</li>'), true)], 500);
+        }
+    }
+
+
+    /**
+    * Returns a view containing the asset model edit form.
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v1.0]
+    * @param int $modelId
+    * @return View
+    */
+    public function getEdit($modelId = null)
+    {
+        // Check if the model exists
+        if (is_null($model = AssetModel::find($modelId))) {
+            // Redirect to the model management page
+            return Redirect::to('assets/models')->with('error', Lang::get('admin/models/message.does_not_exist'));
+        }
+
+        $depreciation_list = \App\Helpers\Helper::depreciationList();
+        $manufacturer_list = \App\Helpers\Helper::manufacturerList();
+        $category_list = \App\Helpers\Helper::categoryList();
+        $view = View::make('models/edit', compact('model'));
+        $view->with('category_list', $category_list);
+        $view->with('depreciation_list', $depreciation_list);
+        $view->with('manufacturer_list', $manufacturer_list);
+        return $view;
+    }
+
+
+    /**
+    * Validates and processes form data from the edit
+    * Asset Model form based on the model ID passed.
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v1.0]
+    * @param int $modelId
+    * @return Redirect
+    */
+    public function postEdit($modelId = null)
+    {
+        // Check if the model exists
+        if (is_null($model = AssetModel::find($modelId))) {
+            // Redirect to the models management page
+            return Redirect::to('admin/models')->with('error', Lang::get('admin/models/message.does_not_exist'));
+        }
+
+
+        if (e(Input::get('depreciation_id')) == '') {
+            $model->depreciation_id =  0;
+        } else {
+            $model->depreciation_id = e(Input::get('depreciation_id'));
+        }
+
+        if (e(Input::get('eol')) == '') {
+            $model->eol =  0;
+        } else {
+            $model->eol = e(Input::get('eol'));
+        }
+
+        // Update the model data
+        $model->name                = e(Input::get('name'));
+        $model->modelno             = e(Input::get('modelno'));
+        $model->manufacturer_id     = e(Input::get('manufacturer_id'));
+        $model->category_id         = e(Input::get('category_id'));
+        $model->note            = e(Input::get('note'));
+        if (Input::get('custom_fieldset')=='') {
+            $model->fieldset_id = null;
+        } else {
+            $model->fieldset_id = e(Input::get('custom_fieldset'));
+        }
+
+        if (Input::file('image')) {
+            $image = Input::file('image');
+            $file_name = str_random(25).".".$image->getClientOriginalExtension();
+            $path = public_path('uploads/models/'.$file_name);
+            Image::make($image->getRealPath())->resize(300, null, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            })->save($path);
+            $model->image = $file_name;
+        }
+
+        if (Input::get('image_delete') == 1 && Input::file('image') == "") {
+            $model->image = null;
+        }
+
+        // Was it created?
+        if ($model->save()) {
+            // Redirect to the new model  page
+            return Redirect::to("hardware/models")->with('success', Lang::get('admin/models/message.update.success'));
+        } else {
+            return redirect()->back()->withInput()->withErrors($model->getErrors());
+        }
+
+
+        // Redirect to the model create page
+        return Redirect::to("hardware/models/$modelId/edit")->with('error', Lang::get('admin/models/message.update.error'));
+
+    }
+
+    /**
+    * Validate and delete the given Asset Model. An Asset Model
+    * cannot be deleted if there are associated assets.
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v1.0]
+    * @param int $modelId
+    * @return Redirect
+    */
+    public function getDelete($modelId)
+    {
+        // Check if the model exists
+        if (is_null($model = AssetModel::find($modelId))) {
+            // Redirect to the blogs management page
+            return Redirect::to('hardware/models')->with('error', Lang::get('admin/models/message.not_found'));
+        }
+
+        if ($model->assets->count() > 0) {
+            // Throw an error that this model is associated with assets
+            return Redirect::to('hardware/models')->with('error', Lang::get('admin/models/message.assoc_users'));
 
         } else {
-            $model = $request->handleImages($model);
+            // Delete the model
+            $model->delete();
+
+            // Redirect to the models management page
+            return Redirect::to('hardware/models')->with('success', Lang::get('admin/models/message.delete.success'));
+        }
+    }
+
+
+    /**
+    * Restore a given Asset Model (mark as un-deleted)
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v1.0]
+    * @param int $modelId
+    * @return Redirect
+    */
+    public function getRestore($modelId = null)
+    {
+
+        // Get user information
+        $model = AssetModel::withTrashed()->find($modelId);
+
+        if (isset($model->id)) {
+
+            // Restore the model
+            $model->restore();
+
+            // Prepare the success message
+            $success = Lang::get('admin/models/message.restore.success');
+
+            // Redirect back
+            return Redirect::back()->with('success', $success);
+
+        } else {
+            return Redirect::back()->with('error', Lang::get('admin/models/message.not_found'));
+        }
+
+    }
+
+
+    /**
+    * Get the model information to present to the model view page
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v1.0]
+    * @param int $modelId
+    * @return View
+    */
+    public function getView($modelId = null)
+    {
+        $model = AssetModel::withTrashed()->find($modelId);
+
+        if (isset($model->id)) {
+                return View::make('models/view', compact('model'));
+        } else {
+            // Prepare the error message
+            $error = Lang::get('admin/models/message.does_not_exist', compact('id'));
+
+            // Redirect to the user management page
+            return Redirect::route('models')->with('error', $error);
         }
 
 
+    }
 
-        if ($model->save()) {
-            if ($this->shouldAddDefaultValues($request->input())) {
-                if (!$this->assignCustomFieldsDefaultValues($model, $request->input('default_values'))){
-                    return redirect()->back()->withInput()->with('error', trans('admin/custom_fields/message.fieldset_default_value.error'));
-                }
-            }
-
-            return redirect()->route('models.index')->with('success', trans('admin/models/message.create.success'));
+    /**
+    * Get the clone page to clone a model
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v1.0]
+    * @param int $modelId
+    * @return View
+    */
+    public function getClone($modelId = null)
+    {
+        // Check if the model exists
+        if (is_null($model_to_clone = AssetModel::find($modelId))) {
+            // Redirect to the model management page
+            return Redirect::to('assets/models')->with('error', Lang::get('admin/models/message.does_not_exist'));
         }
 
-        return redirect()->back()->withInput()->withErrors($model->getErrors());
-    }
-
-    /**
-     * Returns a view containing the asset model edit form.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     * @param int $modelId
-     */
-    public function edit(AssetModel $model) : View | RedirectResponse
-    {
-        $this->authorize('update', AssetModel::class);
-        $category_type = 'asset';
-        return view('models/edit', compact('category_type'))->with('item', $model)->with('depreciation_list', Helper::depreciationList());
-    }
-
-
-    /**
-     * Validates and processes form data from the edit
-     * Asset Model form based on the model ID passed.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     * @param ImageUploadRequest $request
-     * @param int $modelId
-     * @return \Illuminate\Http\RedirectResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     */
-    public function update(StoreAssetModelRequest $request, AssetModel $model) : RedirectResponse
-    {
-        $this->authorize('update', AssetModel::class);
-
-        $model = $request->handleImages($model);
-        $model->depreciation_id = $request->input('depreciation_id');
-        $model->eol = $request->input('eol');
-        $model->name = $request->input('name');
-        $model->model_number = $request->input('model_number');
-        $model->min_amt = $request->input('min_amt');
-        $model->manufacturer_id = $request->input('manufacturer_id');
-        $model->category_id = $request->input('category_id');
-        $model->notes = $request->input('notes');
-        $model->requestable = $request->input('requestable', '0');
-        $model->require_serial = $request->input('require_serial', 0);
-        $model->fieldset_id = $request->input('fieldset_id');
-
-        if ($model->save()) {
-            $this->removeCustomFieldsDefaultValues($model);
-
-            if ($this->shouldAddDefaultValues($request->input())) {
-                if (!$this->assignCustomFieldsDefaultValues($model, $request->input('default_values'))) {
-                    return redirect()->back()->withInput()->withErrors($this->validatorErrors);
-                }
-            }
-
-            if ($model->wasChanged('eol')) {
-                    if ($model->eol > 0) {
-                        $newEol = $model->eol; 
-                        $model->assets()->whereNotNull('purchase_date')->where('eol_explicit', false)
-                            ->update(['asset_eol_date' => DB::raw('DATE_ADD(purchase_date, INTERVAL ' . $newEol . ' MONTH)')]);
-                        } elseif ($model->eol == 0) {
-    						$model->assets()->whereNotNull('purchase_date')->where('eol_explicit', false)
-    							->update(['asset_eol_date' => DB::raw('null')]);
-					}
-                }
-            return redirect()->route('models.index')->with('success', trans('admin/models/message.update.success'));
-        }
-
-        return redirect()->back()->withInput()->withErrors($model->getErrors());
-    }
-
-    /**
-     * Validate and delete the given Asset Model. An Asset Model
-     * cannot be deleted if there are associated assets.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     * @param int $modelId
-     */
-    public function destroy(AssetModel $model) : RedirectResponse
-    {
-        $this->authorize('delete', AssetModel::class);
-
-
-        if ($model->assets()->count() > 0) {
-            // Throw an error that this model is associated with assets
-            return redirect()->route('models.index')->with('error', trans('admin/models/message.assoc_users'));
-        }
-
-        // Delete the model
-        $model->delete();
-
-        // Redirect to the models management page
-        return redirect()->route('models.index')->with('success', trans('admin/models/message.delete.success'));
-    }
-
-    /**
-     * Restore a given Asset Model (mark as un-deleted)
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     * @param int $id
-     */
-    public function getRestore($id) : RedirectResponse
-    {
-        $this->authorize('create', AssetModel::class);
-
-        if ($model = AssetModel::withTrashed()->find($id)) {
-
-            if ($model->deleted_at == '') {
-                return redirect()->back()->with('error', trans('general.not_deleted', ['item_type' => trans('general.asset_model')]));
-            }
-
-            if ($model->restore()) {
-                $logaction = new Actionlog();
-                $logaction->item_type = AssetModel::class;
-                $logaction->item_id = $model->id;
-                $logaction->created_at = date('Y-m-d H:i:s');
-                $logaction->created_by = auth()->id();
-                $logaction->logaction('restore');
-
-
-                // Redirect them to the deleted page if there are more, otherwise the section index
-                $deleted_models = AssetModel::onlyTrashed()->count();
-                if ($deleted_models > 0) {
-                    return redirect()->back()->with('success', trans('admin/models/message.restore.success'));
-                }
-                return redirect()->route('models.index')->with('success', trans('admin/models/message.restore.success'));
-            }
-
-            // Check validation
-            return redirect()->back()->with('error', trans('general.could_not_restore', ['item_type' => trans('general.asset_model'), 'error' => $model->getErrors()->first()]));
-        }
-
-        return redirect()->back()->with('error', trans('admin/models/message.does_not_exist'));
-
-    }
-
-
-    /**
-     * Get the model information to present to the model view page
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     * @param int $modelId
-     */
-    public function show(AssetModel $model) : View | RedirectResponse
-    {
-        $this->authorize('view', AssetModel::class);
-        return view('models/view', compact('model'));
-    }
-
-    /**
-     * Get the clone page to clone a model
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     * @param int $modelId
-     */
-    public function getClone(AssetModel $model) : View | RedirectResponse
-    {
-        $this->authorize('create', AssetModel::class);
-
-        $cloned_model = clone $model;
+        $model = clone $model_to_clone;
         $model->id = null;
-        $model->deleted_at = null;
 
         // Show the page
-        return view('models/edit')
-            ->with('depreciation_list', Helper::depreciationList())
-            ->with('item', $model)
-            ->with('model_id', $model->id)
-            ->with('cloned_model', $cloned_model);
+        $depreciation_list = array('' => 'Do Not Depreciate') + Depreciation::lists('name', 'id');
+        $manufacturer_list = array('' => 'Select One') + Manufacturer::lists('name', 'id');
+        $category_list = array('' => '') + DB::table('categories')->whereNull('deleted_at')->lists('name', 'id');
+        $view = View::make('models/edit');
+        $view->with('category_list', $category_list);
+        $view->with('depreciation_list', $depreciation_list);
+        $view->with('manufacturer_list', $manufacturer_list);
+        $view->with('model', $model);
+        $view->with('clone_model', $model_to_clone);
+        return $view;
+
     }
 
 
     /**
-     * Get the custom fields form
-     *
-     * @author [B. Wetherington] [<uberbrady@gmail.com>]
-     * @since [v2.0]
-     * @param int $modelId
-     */
-    public function getCustomFields($modelId) : View
+    * Get the custom fields form
+    *
+    * @author [B. Wetherington] [<uberbrady@gmail.com>]
+    * @since [v2.0]
+    * @param int $modelId
+    * @return View
+    */
+    public function getCustomFields($modelId)
     {
-        return view('models.custom_fields_form')->with('model', AssetModel::find($modelId));
+        $model=AssetModel::find($modelId);
+        return View::make("models.custom_fields_form")->with("model", $model);
     }
 
 
 
     /**
-     * Returns a view that allows the user to bulk edit model attributes
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.7]
-     */
-    public function postBulkEdit(Request $request) : View | RedirectResponse
+    * Get the JSON response to populate the data tables on the
+    * Asset Model listing page.
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v2.0]
+    * @param string $status
+    * @return String JSON
+    */
+
+    public function getDatatable($status = null)
     {
-        $models_raw_array = $request->input('ids');
+        $models = AssetModel::with('category', 'assets', 'depreciation');
 
-        // Make sure some IDs have been selected
-        if ((is_array($models_raw_array)) && (count($models_raw_array) > 0)) {
-            $models = AssetModel::whereIn('id', $models_raw_array)->withCount('assets as assets_count')->orderBy('assets_count', 'ASC')->get();
+        switch ($status) {
+            case 'Deleted':
+                $models->withTrashed()->Deleted();
+                break;
+        }
 
-            // If deleting....
-            if ($request->input('bulk_actions') == 'delete') {
-                $valid_count = 0;
-                foreach ($models as $model) {
-                    if ($model->assets_count == 0) {
-                        $valid_count++;
+
+        if (Input::has('search')) {
+            $models = $models->TextSearch(Input::get('search'));
+        }
+
+        if (Input::has('offset')) {
+            $offset = e(Input::get('offset'));
+        } else {
+            $offset = 0;
+        }
+
+        if (Input::has('limit')) {
+            $limit = e(Input::get('limit'));
+        } else {
+            $limit = 50;
+        }
+
+
+        $allowed_columns = ['id','name','modelno'];
+        $order = Input::get('order') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array(Input::get('sort'), $allowed_columns) ? Input::get('sort') : 'created_at';
+
+        $models = $models->orderBy($sort, $order);
+
+        $modelCount = $models->count();
+        $models = $models->skip($offset)->take($limit)->get();
+
+        $rows = array();
+
+        foreach ($models as $model) {
+            if ($model->deleted_at == '') {
+                $actions = '<div style=" white-space: nowrap;"><a href="'.route('update/model', $model->id).'" class="btn btn-warning btn-sm" style="margin-right:5px;"><i class="fa fa-pencil icon-white"></i></a><a data-html="false" class="btn delete-asset btn-danger btn-sm" data-toggle="modal" href="'.route('delete/model', $model->id).'" data-content="'.Lang::get('admin/models/message.delete.confirm').'" data-title="'.Lang::get('general.delete').' '.htmlspecialchars($model->name).'?" onClick="return false;"><i class="fa fa-trash icon-white"></i></a></div>';
+            } else {
+                $actions = '<a href="'.route('restore/model', $model->id).'" class="btn btn-warning btn-sm"><i class="fa fa-recycle icon-white"></i></a>';
+            }
+
+            $rows[] = array(
+                'id'      => $model->id,
+                'manufacturer'      => (string)link_to('/admin/settings/manufacturers/'.$model->manufacturer->id.'/view', $model->manufacturer->name),
+                'name'              => (string)link_to('/hardware/models/'.$model->id.'/view', $model->name),
+                'image' => ($model->image!='') ? '<img src="'.config('app.url').'/uploads/models/'.$model->image.'" height=50 width=50>' : '',
+                'modelnumber'       => $model->modelno,
+                'numassets'         => $model->assets->count(),
+                'depreciation'      => (($model->depreciation)&&($model->depreciation->id > 0)) ? $model->depreciation->name.' ('.$model->depreciation->months.')' : Lang::get('general.no_depreciation'),
+                'category'          => ($model->category) ? $model->category->name : '',
+                'eol'               => ($model->eol) ? $model->eol.' '.Lang::get('general.months') : '',
+                'note'       => $model->getNote(),
+                'actions'           => $actions
+                );
+        }
+
+        $data = array('total' => $modelCount, 'rows' => $rows);
+
+        return $data;
+    }
+
+
+    /**
+    * Get the asset information to present to the model view detail page
+    *
+    * @author [A. Gianotto] [<snipe@snipe.net>]
+    * @since [v2.0]
+    * @param int $modelId
+    * @return String JSON
+    */
+    public function getDataView($modelID)
+    {
+        $assets = Asset::where('model_id', '=', $modelID)->withTrashed()->with('company');
+
+        if (Input::has('search')) {
+            $assets = $assets->TextSearch(Input::get('search'));
+        }
+
+        if (Input::has('offset')) {
+            $offset = e(Input::get('offset'));
+        } else {
+            $offset = 0;
+        }
+
+        if (Input::has('limit')) {
+            $limit = e(Input::get('limit'));
+        } else {
+            $limit = 50;
+        }
+
+
+        $allowed_columns = ['name', 'serial','asset_tag'];
+        $order = Input::get('order') === 'asc' ? 'asc' : 'desc';
+        $sort = in_array(Input::get('sort'), $allowed_columns) ? Input::get('sort') : 'created_at';
+
+        $assets = $assets->orderBy($sort, $order);
+
+        $assetsCount = $assets->count();
+        $assets = $assets->skip($offset)->take($limit)->get();
+
+        $rows = array();
+
+
+        foreach ($assets as $asset) {
+            $actions = '';
+
+            if ($asset->assetstatus) {
+                if ($asset->assetstatus->deployable != 0) {
+                    if (($asset->assigned_to !='') && ($asset->assigned_to > 0)) {
+                        $actions = '<a href="'.route('checkin/hardware', $asset->id).'" class="btn btn-primary btn-sm">'.Lang::get('general.checkin').'</a>';
+                    } else {
+                        $actions = '<a href="'.route('checkout/hardware', $asset->id).'" class="btn btn-info btn-sm">'.Lang::get('general.checkout').'</a>';
                     }
                 }
-
-                return view('models/bulk-delete', compact('models'))->with('valid_count', $valid_count);
-
-            // Otherwise display the bulk edit screen
-            } else {
-                $nochange = ['NC' => 'No Change'];
-                $fieldset_list = $nochange + Helper::customFieldsetList();
-                $depreciation_list = $nochange + Helper::depreciationList();
-
-                return view('models/bulk-edit', compact('models'))
-                    ->with('fieldset_list', $fieldset_list)
-                    ->with('depreciation_list', $depreciation_list);
-            }
-        }
-
-        return redirect()->route('models.index')
-            ->with('error', 'You must select at least one model to edit.');
-    }
-
-
-
-    /**
-     * Returns a view that allows the user to bulk edit model attrbutes
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.7]
-     */
-    public function postBulkEditSave(Request $request) : RedirectResponse
-    {
-        $models_raw_array = $request->input('ids');
-        $update_array = [];
-
-
-        if (($request->filled('manufacturer_id') && ($request->input('manufacturer_id') != 'NC'))) {
-            $update_array['manufacturer_id'] = $request->input('manufacturer_id');
-        }
-        if (($request->filled('category_id') && ($request->input('category_id') != 'NC'))) {
-            $update_array['category_id'] = $request->input('category_id');
-        }
-        if ($request->input('fieldset_id') != 'NC') {
-            $update_array['fieldset_id'] = $request->input('fieldset_id');
-        }
-        if ($request->input('depreciation_id') != 'NC') {
-            $update_array['depreciation_id'] = $request->input('depreciation_id');
-        }
-
-        
-        if (count($update_array) > 0) {
-            AssetModel::whereIn('id', $models_raw_array)->update($update_array);
-
-            return redirect()->route('models.index')
-                ->with('success', trans('admin/models/message.bulkedit.success'));
-        }
-
-        return redirect()->route('models.index')
-            ->with('warning', trans('admin/models/message.bulkedit.error'));
-    }
-
-    /**
-     * Validate and delete the given Asset Models. An Asset Model
-     * cannot be deleted if there are associated assets.
-     *
-     * @author [A. Gianotto] [<snipe@snipe.net>]
-     * @since [v1.0]
-     * @param int $modelId
-     */
-    public function postBulkDelete(Request $request) : RedirectResponse
-    {
-        $models_raw_array = $request->input('ids');
-
-        if ((is_array($models_raw_array)) && (count($models_raw_array) > 0)) {
-            $models = AssetModel::whereIn('id', $models_raw_array)->withCount('assets as assets_count')->get();
-
-            $del_error_count = 0;
-            $del_count = 0;
-
-            foreach ($models as $model) {
-
-                if ($model->assets_count > 0) {
-                    $del_error_count++;
-                } else {
-                    $model->delete();
-                    $del_count++;
-                }
             }
 
-
-            if ($del_error_count == 0) {
-                return redirect()->route('models.index')
-                    ->with('success', trans('admin/models/message.bulkdelete.success', ['success_count'=> $del_count]));
-            }
-
-            return redirect()->route('models.index')
-                ->with('warning', trans('admin/models/message.bulkdelete.success_partial', ['fail_count'=>$del_error_count, 'success_count'=> $del_count]));
+            $rows[] = array(
+                'id'            => $asset->id,
+                'name'          => (string)link_to('/hardware/'.$asset->id.'/view', $asset->showAssetName()),
+                'asset_tag'     => (string)link_to('hardware/'.$asset->id.'/view', $asset->asset_tag),
+                'serial'        => $asset->serial,
+                'assigned_to'   => ($asset->assigned_to) ? (string)link_to('/admin/users/'.$asset->assigned_to.'/view', $asset->assigneduser->fullName()) : '',
+                'actions'       => $actions,
+                'companyName'   => Company::getName($asset)
+            );
         }
 
-        return redirect()->route('models.index')
-            ->with('error', trans('admin/models/message.bulkdelete.error'));
-    }
+        $data = array('total' => $assetsCount, 'rows' => $rows);
 
-    /**
-     * Returns true if a fieldset is set, 'add default values' is ticked and if
-     * any default values were entered into the form.
-     *
-     * @param  array  $input
-     */
-    private function shouldAddDefaultValues(array $input) : bool
-    {
-        return ! empty($input['add_default_values'])
-            && ! empty($input['default_values'])
-            && ! empty($input['fieldset_id']);
-    }
-
-    /**
-     * Adds default values to a model (as long as they are truthy)
-     *
-     * @param  AssetModel $model
-     * @param  array      $defaultValues
-     */
-    private function assignCustomFieldsDefaultValues(AssetModel|SnipeModel $model, array $defaultValues): bool
-    {
-        $data = array();
-        foreach ($defaultValues as $customFieldId => $defaultValue) {
-            $customField = CustomField::find($customFieldId);
-
-            $data[$customField->db_column] = $defaultValue;
-        }
-
-        $allRules = $model->fieldset->validation_rules();
-        $rules = array();
-
-        foreach ($allRules as $field => $validation) {
-            // If the field is marked as required, eliminate the rule so it doesn't interfere with the default values
-            // (we are at model level, the rule still applies when creating a new asset using this model)
-            $index = array_search('required', $validation);
-            if ($index !== false){
-                $validation[$index] = 'nullable';
-            }
-            $rules[$field] = $validation;
-        }
-
-        $attributes = [];
-        foreach ($model->fieldset->fields as $field) {
-            $attributes[$field->db_column] = trim(preg_replace('/_+|snipeit|\d+/', ' ', $field->db_column));
-        }
-
-        $validator = Validator::make($data, $rules)->setAttributeNames($attributes);
-
-        if($validator->fails()){
-            $this->validatorErrors = $validator->errors();
-            return false;
-        }
-
-        foreach ($defaultValues as $customFieldId => $defaultValue) {
-            if(is_array($defaultValue)){
-                $model->defaultValues()->attach($customFieldId, ['default_value' => implode(', ', $defaultValue)]);
-            }elseif ($defaultValue) {
-                $model->defaultValues()->attach($customFieldId, ['default_value' => $defaultValue]);
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Removes all default values
-     *
-     */
-    private function removeCustomFieldsDefaultValues(AssetModel|SnipeModel $model): void
-    {
-        $model->defaultValues()->detach();
+        return $data;
     }
 }
